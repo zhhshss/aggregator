@@ -1,0 +1,29 @@
+# 主流机场关键字（匹配节点名 / 订阅域名，大小写不敏感）
+# 可自行增删；一行一个
+小猫咪
+小火箭
+Nexitally
+Ytoo
+JustMySocks
+Just My Socks
+JMS-
+WgetCloud
+FlyingBird
+Flyingbird
+FastLink
+TAG-
+咪噜
+Mirrors
+FlowerCloud
+Flower
+AmyTelecom
+Vanilla
+Spartan
+Cross
+GLaDOS
+IEPL
+IPLC
+专线
+高端
+家宽
+IEPL
