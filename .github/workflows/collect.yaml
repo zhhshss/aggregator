@@ -1,6 +1,5 @@
 name: Collect
 on:
-  # every Monday 00:00 UTC (~08:00 Asia/Shanghai)
   schedule:
     - cron: "0 0 * * 1"
   workflow_dispatch:
@@ -28,6 +27,12 @@ env:
   GIST_LINK: ${{ secrets.GIST_LINK }}
   CUSTOMIZE_LINK: ${{ secrets.CUSTOMIZE_LINK }}
   ENABLE_SPECIAL_PROTOCOLS: ${{ vars.ENABLE_SPECIAL_PROTOCOLS }}
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  R2_PREFIX: ${{ secrets.R2_PREFIX }}
+  R2_PUBLIC_BASE: ${{ secrets.R2_PUBLIC_BASE }}
 
 jobs:
   process:
@@ -65,6 +70,9 @@ jobs:
               echo "Error: secret GIST_LINK must be username/gist_id"
               exit 1
           fi
+          if [ -z "$R2_ENDPOINT" ] || [ -z "$R2_ACCESS_KEY_ID" ] || [ -z "$R2_SECRET_ACCESS_KEY" ]; then
+              echo "Warning: R2 secrets incomplete, will skip R2 upload"
+          fi
 
       - name: Collect
         env:
@@ -87,6 +95,18 @@ jobs:
             -k "$GIST_PAT" \
             -i data/clash.yaml \
             -b data/mainstream_brands.txt
+
+      - name: Upload to Cloudflare R2
+        if: ${{ env.R2_ENDPOINT != '' && env.R2_ACCESS_KEY_ID != '' && env.R2_SECRET_ACCESS_KEY != '' }}
+        run: |
+          python -u scripts/upload_r2.py \
+            --endpoint "$R2_ENDPOINT" \
+            --access-key "$R2_ACCESS_KEY_ID" \
+            --secret-key "$R2_SECRET_ACCESS_KEY" \
+            --bucket "${R2_BUCKET:-aggregator}" \
+            --prefix "${R2_PREFIX:-}" \
+            --public-base "${R2_PUBLIC_BASE:-}" \
+            --dir data
 
       - name: Timestamp
         run: date
