@@ -1,34 +1,25 @@
 name: Refresh
 on:
-  # performed every two hours
+  # every 6 hours
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "20 */6 * * *"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.repository }}
+  group: ${{ github.repository }}-refresh
   cancel-in-progress: true
 
 env:
-  # time zone
   TZ: Asia/Shanghai
-
-  # github access token
   GIST_PAT: ${{ secrets.GIST_PAT }}
-
-  # github username and gist id, separated by '/'
   GIST_LINK: ${{ secrets.GIST_LINK }}
-
-  # the url to the list of airports that you maintain yourself
-  # each line include domain, coupon and invitation code, the domain must be included, and the latter two items are optional
   CUSTOMIZE_LINK: ${{ secrets.CUSTOMIZE_LINK }}
-
-  # include special protocols, such as vless hysteria2 and hysteria
   ENABLE_SPECIAL_PROTOCOLS: ${{ vars.ENABLE_SPECIAL_PROTOCOLS }}
 
 jobs:
   process:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
@@ -39,33 +30,39 @@ jobs:
       - name: Prepare
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.12"
           architecture: "x64"
           cache: "pip"
 
       - name: Install
         run: pip3 install -r requirements.txt
 
-      - name: Check
+      - name: Check secrets
         run: |
           if [ -z "$GIST_PAT" ]; then
-              echo "Error: environment 'GIST_PAT' cannot be empty"
+              echo "Error: secret GIST_PAT cannot be empty"
               exit 1
           fi
-
           if [ -z "$GIST_LINK" ]; then
-              echo "Error: environment 'GIST_LINK' cannot be empty"
+              echo "Error: secret GIST_LINK cannot be empty"
               exit 1
           fi
-
           LINK_PARTS=$(echo "$GIST_LINK" | awk -F'/' 'NF==2 && $1!="" && $2!=""')
           if [ -z "$LINK_PARTS" ]; then
-              echo "Error: environment 'GIST_LINK' is not valid, should be 'username/gist_id' format"
+              echo "Error: secret GIST_LINK must be username/gist_id"
               exit 1
           fi
 
       - name: Refresh
-        run: python -u subscribe/collect.py --all --refresh --overwrite --skip
+        run: python -u subscribe/collect.py --all --refresh --overwrite --skip -t clash v2ray singbox -n 32
+
+      - name: Split mainstream airports
+        run: |
+          python -u scripts/split_mainstream.py \
+            -g "$GIST_LINK" \
+            -k "$GIST_PAT" \
+            -i data/clash.yaml \
+            -b data/mainstream_brands.txt
 
       - name: Timestamp
         run: date
