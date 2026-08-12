@@ -4,7 +4,8 @@ name: TURN scan (public minutes)
 # 代码通过只读 Deploy Key 从私有仓库拉取；工作流日志不输出 TURN 凭据。
 on:
   schedule:
-    - cron: "7 */3 * * *"
+    # TURN 候选发现与完整中继扫描每天一次；现有可用性/测速任务仍每 3 小时运行。
+    - cron: "7 0 * * *"
   workflow_dispatch:
     inputs:
       concurrency:
