@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""按国家测试已确认 CN2 IP，并同步 Cloudflare DNS。"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import ipaddress
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass
+from pathlib import Path
+
+BAIDU_PROXY = "http://cloudnproxy.baidu.com:443"
+BAIDU_HEADERS = (
+    "Host: ascdn.baidu.com",
+    "Proxy-Connection: Keep-Alive",
+    "X-T5-Auth: 1951164069",
+    "User-Agent: okhttp/3.11.0 SP-engine/2.71.0 Dalvik/2.1.0 "
+    "(Linux; U; Android 9; HMA-AL00 Build/PQ3B.190801.002) "
+    "baiduboxapp/13.33.0.11 (Baidu; P1 9)",
+)
+TEST_HOST = "cp.cloudflare.com"
+TEST_URL = f"https://{TEST_HOST}/"
+
+
+@dataclass(frozen=True)
+class Candidate:
+    ip: str
+    country: str
+    delay_ms: int
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input", required=True, type=Path)
+    parser.add_argument("--zone", required=True)
+    parser.add_argument("--prefix", default="cn2")
+    parser.add_argument("--report", default=Path("cn2-dns/status.json"), type=Path)
+    parser.add_argument("--timeout", type=int, default=12)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--cf-api-token", default=os.getenv("CF_API_TOKEN", ""))
+    parser.add_argument("--cf-api-key", default=os.getenv("CF_API_KEY", ""))
+    parser.add_argument("--cf-api-email", default=os.getenv("CF_API_EMAIL", ""))
+    return parser.parse_args()
+
+
+def load_candidates(path: Path) -> dict[str, list[Candidate]]:
+    grouped: dict[str, list[Candidate]] = {}
+    seen: set[tuple[str, str]] = set()
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                ip = str(ipaddress.ip_address(row["ip"].strip()))
+                country = row["country"].strip().upper()
+                delay = int(row.get("baidu_delay_ms") or 10**9)
+            except (KeyError, ValueError):
+                continue
+            if not country or (country, ip) in seen:
+                continue
+            seen.add((country, ip))
+            grouped.setdefault(country, []).append(Candidate(ip, country, delay))
+    for candidates in grouped.values():
+        candidates.sort(key=lambda item: (item.delay_ms, item.ip))
+    return grouped
+
+
+def test_ip(ip: str, timeout: int) -> tuple[bool, int | None]:
+    base_command = [
+        "curl",
+        "--silent",
+        "--show-error",
+        "--output",
+        "/dev/null",
+        "--connect-timeout",
+        str(timeout),
+        "--max-time",
+        str(timeout + 3),
+        "--proxy",
+        BAIDU_PROXY,
+    ]
+    for header in BAIDU_HEADERS:
+        base_command.extend(("--proxy-header", header))
+    for _ in range(3):
+        command = base_command + [
+            "--connect-to",
+            f"{TEST_HOST}:443:{ip}:443",
+            "--write-out",
+            "%{http_code} %{time_total}",
+            TEST_URL,
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout + 8,
+            )
+            status, elapsed = result.stdout.strip().split()
+            if result.returncode == 0 and status in {"200", "204"}:
+                return True, max(1, round(float(elapsed) * 1000))
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            continue
+    return False, None
+
+
+def choose_ip(candidates: list[Candidate], current_ip: str | None, timeout: int) -> tuple[Candidate | None, int | None, list[dict]]:
+    ordered = candidates
+    if current_ip:
+        ordered = sorted(candidates, key=lambda item: (item.ip != current_ip, item.delay_ms, item.ip))
+    attempts: list[dict] = []
+    for candidate in ordered:
+        alive, delay = test_ip(candidate.ip, timeout)
+        attempts.append({"ip": candidate.ip, "alive": alive, "delay_ms": delay})
+        if alive:
+            return candidate, delay, attempts
+    return None, None, attempts
+
+
+class Cloudflare:
+    def __init__(self, args: argparse.Namespace) -> None:
+        if args.cf_api_token:
+            self.headers = {"Authorization": f"Bearer {args.cf_api_token}"}
+        elif args.cf_api_key and args.cf_api_email:
+            self.headers = {
+                "X-Auth-Key": args.cf_api_key,
+                "X-Auth-Email": args.cf_api_email,
+            }
+        else:
+            raise ValueError("缺少 Cloudflare API 凭据")
+        self.headers["Content-Type"] = "application/json"
+        self.base = "https://api.cloudflare.com/client/v4"
+
+    def request(self, method: str, path: str, payload: dict | None = None) -> dict:
+        data = json.dumps(payload).encode() if payload is not None else None
+        request = urllib.request.Request(
+            self.base + path,
+            data=data,
+            headers=self.headers,
+            method=method,
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                result = json.load(response)
+        except urllib.error.HTTPError as error:
+            detail = error.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"Cloudflare HTTP {error.code}: {detail}") from error
+        if not result.get("success"):
+            raise RuntimeError(f"Cloudflare API 失败: {result.get('errors')}")
+        return result
+
+    def zone_id(self, zone: str) -> str:
+        encoded = urllib.parse.quote(zone)
+        result = self.request("GET", f"/zones?name={encoded}&status=active")
+        zones = result.get("result", [])
+        if len(zones) != 1:
+            raise RuntimeError(f"无法唯一定位 Cloudflare Zone: {zone}")
+        return zones[0]["id"]
+
+    def record(self, zone_id: str, name: str) -> dict | None:
+        encoded = urllib.parse.quote(name)
+        result = self.request("GET", f"/zones/{zone_id}/dns_records?type=A&name={encoded}")
+        records = result.get("result", [])
+        return records[0] if records else None
+
+    def upsert_a(self, zone_id: str, name: str, ip: str, record: dict | None) -> str:
+        payload = {"type": "A", "name": name, "content": ip, "ttl": 60, "proxied": False}
+        if record:
+            if record.get("content") == ip and record.get("proxied") is False:
+                return "unchanged"
+            self.request("PUT", f"/zones/{zone_id}/dns_records/{record['id']}", payload)
+            return "updated"
+        self.request("POST", f"/zones/{zone_id}/dns_records", payload)
+        return "created"
+
+
+def main() -> int:
+    args = parse_args()
+    grouped = load_candidates(args.input)
+    if not grouped:
+        raise SystemExit("CN2 结果为空；保留现有 DNS，不做变更")
+    cloudflare = None if args.dry_run else Cloudflare(args)
+    zone_id = "" if args.dry_run else cloudflare.zone_id(args.zone)
+    results: list[dict] = []
+    failures = 0
+    for country in sorted(grouped):
+        name = f"{args.prefix}-{country.lower()}.{args.zone}"
+        record = None if args.dry_run else cloudflare.record(zone_id, name)
+        current_ip = record.get("content") if record else None
+        chosen, delay, attempts = choose_ip(grouped[country], current_ip, args.timeout)
+        if chosen is None:
+            failures += 1
+            action = "kept-current" if current_ip else "no-record"
+            selected_ip = current_ip
+        elif args.dry_run:
+            action = "dry-run"
+            selected_ip = chosen.ip
+        else:
+            action = cloudflare.upsert_a(zone_id, name, chosen.ip, record)
+            selected_ip = chosen.ip
+        print(f"{country}: {name} -> {selected_ip or '-'} ({action})")
+        results.append(
+            {
+                "country": country,
+                "hostname": name,
+                "previous_ip": current_ip,
+                "selected_ip": selected_ip,
+                "delay_ms": delay,
+                "action": action,
+                "attempts": attempts,
+            }
+        )
+    args.report.parent.mkdir(parents=True, exist_ok=True)
+    args.report.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if failures:
+        print(f"警告：{failures} 个国家当前没有可用候选，未覆盖已有 DNS", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

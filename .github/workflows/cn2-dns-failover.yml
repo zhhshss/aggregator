@@ -1,0 +1,54 @@
+name: CN2 DNS failover
+
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: cn2-dns-failover
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  failover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CF_API_KEY: ${{ secrets.CN2_CF_API_KEY }}
+      CF_API_EMAIL: ${{ secrets.CN2_CF_API_EMAIL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "cn2/cn2.csv"
+          test -n "$CF_API_KEY"
+          test -n "$CF_API_EMAIL"
+
+      - name: Test and update DNS
+        run: |
+          python -u scripts/cn2_dns_failover.py \
+            --input "cn2/cn2.csv" \
+            --zone "ciallo0d000721.cc.cd" \
+            --prefix "cn2" \
+            --report "cn2-dns/status.json"
+
+      - name: Upload status
+        uses: actions/upload-artifact@v4
+        with:
+          name: cn2-dns-status-${{ github.run_id }}
+          path: cn2-dns/status.json
+          retention-days: 14
+          if-no-files-found: error
