@@ -1,0 +1,2 @@
+ip,port,country,city,datacenter,asn,organization,source_latency_ms,baidu_delay_ms,tested,cn2,cn2_evidence,trace_url
+202.55.27.177,443,JP,东京,NRT,4809,China Telecom Next Generation Carrier Network,73.0,3169,True,True,"Guangzhou: 59.43.130.206, 59.43.141.146, 59.43.186.186, 59.43.38.158; Nanjing: 59.43.183.54, 59.43.38.190",https://globalping.io?measurement=2sFODbYGZ5kEYsvIW00020w5B

@@ -1,0 +1,17 @@
+[
+  {
+    "ip": "202.55.27.177",
+    "port": 443,
+    "country": "JP",
+    "city": "东京",
+    "datacenter": "NRT",
+    "asn": 4809,
+    "organization": "China Telecom Next Generation Carrier Network",
+    "source_latency_ms": 73.0,
+    "baidu_delay_ms": 3169,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.130.206, 59.43.141.146, 59.43.186.186, 59.43.38.158; Nanjing: 59.43.183.54, 59.43.38.190",
+    "trace_url": "https://globalping.io?measurement=2sFODbYGZ5kEYsvIW00020w5B"
+  }
+]
