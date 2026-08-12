@@ -1,0 +1,80 @@
+name: Find CN2 proxies
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "优先测试的地区代码，逗号分隔"
+        required: false
+        default: "HK,JP,SG,TW,KR"
+      max_candidates:
+        description: "每轮最多经百度前置测试多少个候选"
+        required: false
+        default: "80"
+      max_traces:
+        description: "最多对多少个可用候选做回程路由追踪"
+        required: false
+        default: "50"
+  schedule:
+    - cron: "17 1 * * *"
+
+concurrency:
+  group: find-cn2-proxies
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GLOBALPING_TOKEN: ${{ secrets.GLOBALPING_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check input CSV
+        run: test -s "Global-proxyip-443.csv"
+
+      - name: Find CN2 proxies
+        env:
+          REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '80' }}
+          MAX_TRACES: ${{ github.event.inputs.max_traces || '50' }}
+        run: |
+          python -u scripts/find_cn2.py \
+            --input Global-proxyip-443.csv \
+            --output-dir cn2 \
+            --regions "$REGIONS" \
+            --preselect "$MAX_CANDIDATES" \
+            --max-candidates "$MAX_CANDIDATES" \
+            --max-traces "$MAX_TRACES"
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cn2-proxies-${{ github.run_id }}
+          path: cn2/
+          if-no-files-found: error
+
+      - name: Publish latest report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cn2/
+          if git diff --cached --quiet; then
+            echo "CN2 report unchanged"
+            exit 0
+          fi
+          git commit -m "chore: update CN2 proxy report"
+          git push
