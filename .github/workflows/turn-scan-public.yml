@@ -1,0 +1,141 @@
+name: TURN scan (public minutes)
+
+# 公开仓库的标准 GitHub-hosted runner 不消耗私有仓库的 Actions 分钟。
+# 代码通过只读 Deploy Key 从私有仓库拉取；工作流日志不输出 TURN 凭据。
+on:
+  schedule:
+    - cron: "7 */3 * * *"
+  workflow_dispatch:
+    inputs:
+      concurrency:
+        description: "扫描并发"
+        required: false
+        default: "100"
+      query:
+        description: "覆盖 FOFA 查询（留空使用默认查询）"
+        required: false
+        default: ""
+
+concurrency:
+  group: turn-scan-public
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.TURN_R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.TURN_R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.TURN_R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.TURN_R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ secrets.TURN_R2_PUBLIC_BASE }}
+      R2_PREFIX: turn/
+      FOFA_BASE: https://fofa-gw.ciallo0d000721.cc.cd
+      FOFA_TOKEN: ${{ secrets.TURN_FOFA_TOKEN }}
+      XUDP_HOST: udp.ciallo0d000721.cc.cd
+      XUDP_UUID: ${{ secrets.TURN_XUDP_UUID }}
+      XHTTP_HOST: xturn.ciallo0d000721.cc.cd
+      XHTTP_ENTRY: xturn.ciallo0d000721.cc.cd
+      XHTTP_UUID: ${{ secrets.TURN_XHTTP_UUID }}
+      FOFA_PAGES: "10"
+      FOFA_SIZE: "50"
+
+    steps:
+      - name: Checkout private scanner source
+        uses: actions/checkout@v4
+        with:
+          repository: zhhshss/fofa-cf-snippet
+          ssh-key: ${{ secrets.TURN_PRIVATE_DEPLOY_KEY }}
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: false
+
+      - name: Check required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in \
+            R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET \
+            FOFA_TOKEN XUDP_UUID XHTTP_UUID; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing required secret: $key" >&2
+              exit 1
+            fi
+          done
+
+      - name: Build scanner
+        run: go build -o turn_scan turn_scan.go
+
+      - name: Export and merge candidates
+        env:
+          FOFA_QUERY: ${{ github.event.inputs.query }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${FOFA_QUERY:-}" ]]; then
+            python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
+              --countries '' --days 400 --window-days 14 --limit 4000 \
+              -o turn_candidates.txt --json turn_candidates.json
+          else
+            python3 scripts/fofa_export_bulk.py --preset turn \
+              --countries SG,JP,KR,HK,TW --days 400 --window-days 14 --limit 4000 \
+              -o turn_candidates.txt --json turn_candidates.json
+          fi
+          python3 scripts/merge_turn_candidates.py \
+            --report "$R2_PUBLIC_BASE/turn/turn_report.json" \
+            --input turn_candidates.txt \
+            --output turn_candidates.txt \
+            || echo "Previous report unavailable; using fresh candidates"
+          test -s turn_candidates.txt
+
+      - name: Scan and publish to R2
+        env:
+          SCAN_CONCURRENCY: ${{ github.event.inputs.concurrency || '100' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! ./turn_scan -c "$SCAN_CONCURRENCY" -p 400 -pt 3 -t 5 -ct 8 \
+            turn_candidates.txt > /tmp/turn-scan.log 2>&1; then
+            echo "TURN scan failed; sanitized tail follows" >&2
+            tail -n 100 /tmp/turn-scan.log \
+              | sed -E \
+                -e 's/(WEAK|CRED)\([^)]*\)/\1(REDACTED)/g' \
+                -e 's/\([^()[:space:]]+:[^()[:space:]]+\)/(REDACTED)/g' \
+              >&2
+            exit 1
+          fi
+
+      - name: Build and publish XHTTP subscription
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install -q boto3 botocore
+          python3 scripts/turn_xhttp_sub.py > /tmp/xhttp-sub.log 2>&1
+
+      - name: Safe summary
+        if: always()
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          print("## TURN scan (public runner)")
+          report = Path("turn_report.json")
+          if not report.exists():
+              print("\n- No report produced")
+              raise SystemExit
+          data = json.loads(report.read_text(encoding="utf-8"))
+          print(f"\n- Total candidates: {data.get('total', 0)}")
+          print(f"- Usable: {data.get('usable', 0)}")
+          print(f"- ALL: {data.get('all_count', 0)}")
+          print(f"- Updated: {data.get('updated_at', 'unknown')}")
+          PY
