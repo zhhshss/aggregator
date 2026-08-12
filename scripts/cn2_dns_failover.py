@@ -8,6 +8,7 @@ import csv
 import ipaddress
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.error
@@ -169,6 +170,19 @@ class Cloudflare:
         records = result.get("result", [])
         return records[0] if records else None
 
+    def managed_records(self, zone_id: str, prefix: str, zone: str) -> dict[str, dict]:
+        result = self.request("GET", f"/zones/{zone_id}/dns_records?type=A&per_page=500")
+        pattern = re.compile(
+            rf"^{re.escape(prefix)}-([a-z]{{2}})\.{re.escape(zone)}$",
+            re.IGNORECASE,
+        )
+        records: dict[str, dict] = {}
+        for record in result.get("result", []):
+            match = pattern.match(record.get("name", ""))
+            if match:
+                records[match.group(1).upper()] = record
+        return records
+
     def upsert_a(self, zone_id: str, name: str, ip: str, record: dict | None) -> str:
         payload = {"type": "A", "name": name, "content": ip, "ttl": 60, "proxied": False}
         if record:
@@ -187,13 +201,17 @@ def main() -> int:
         raise SystemExit("CN2 结果为空；保留现有 DNS，不做变更")
     cloudflare = None if args.dry_run else Cloudflare(args)
     zone_id = "" if args.dry_run else cloudflare.zone_id(args.zone)
+    managed = {} if args.dry_run else cloudflare.managed_records(zone_id, args.prefix, args.zone)
     results: list[dict] = []
     failures = 0
-    for country in sorted(grouped):
+    for country in sorted(set(grouped) | set(managed)):
         name = f"{args.prefix}-{country.lower()}.{args.zone}"
-        record = None if args.dry_run else cloudflare.record(zone_id, name)
+        record = managed.get(country) if not args.dry_run else None
         current_ip = record.get("content") if record else None
-        chosen, delay, attempts = choose_ip(grouped[country], current_ip, args.timeout)
+        candidates = grouped.get(country, [])
+        if current_ip and all(item.ip != current_ip for item in candidates):
+            candidates = [Candidate(current_ip, country, 10**9), *candidates]
+        chosen, delay, attempts = choose_ip(candidates, current_ip, args.timeout)
         if chosen is None:
             failures += 1
             action = "kept-current" if current_ip else "no-record"

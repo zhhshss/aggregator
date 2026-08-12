@@ -48,6 +48,17 @@ class Cn2DnsFailoverTest(unittest.TestCase):
         self.assertEqual(tested, ["192.0.2.2"])
         self.assertEqual(selected.ip, "192.0.2.2")
 
+    def test_managed_record_pattern(self):
+        cloudflare = object.__new__(MODULE.Cloudflare)
+        cloudflare.request = lambda method, path: {
+            "result": [
+                {"name": "cn2-tw.example.com", "content": "192.0.2.1"},
+                {"name": "other.example.com", "content": "192.0.2.2"},
+            ]
+        }
+        records = cloudflare.managed_records("zone", "cn2", "example.com")
+        self.assertEqual(records["TW"]["content"], "192.0.2.1")
+
 
 if __name__ == "__main__":
     unittest.main()
