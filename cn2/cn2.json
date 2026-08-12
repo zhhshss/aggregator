@@ -1,5 +1,20 @@
 [
   {
+    "ip": "43.159.4.80",
+    "port": 443,
+    "country": "SG",
+    "city": "新加坡",
+    "datacenter": "SIN",
+    "asn": 132203,
+    "organization": "Tencent Building, Kejizhongyi Avenue",
+    "source_latency_ms": 2.0,
+    "baidu_delay_ms": 3651,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.130.110; Nanjing: 59.43.139.137, 59.43.22.6",
+    "trace_url": "https://globalping.io?measurement=2jNu72nMcU25MBVKK00020w5D"
+  },
+  {
     "ip": "202.55.27.177",
     "port": 443,
     "country": "JP",
@@ -8,10 +23,25 @@
     "asn": 4809,
     "organization": "China Telecom Next Generation Carrier Network",
     "source_latency_ms": 73.0,
-    "baidu_delay_ms": 3169,
+    "baidu_delay_ms": 3730,
     "tested": true,
     "cn2": true,
-    "cn2_evidence": "Guangzhou: 59.43.130.206, 59.43.141.146, 59.43.186.186, 59.43.38.158; Nanjing: 59.43.183.54, 59.43.38.190",
-    "trace_url": "https://globalping.io?measurement=2sFODbYGZ5kEYsvIW00020w5B"
+    "cn2_evidence": "Guangzhou: 59.43.130.206, 59.43.141.146, 59.43.186.186; Beijing: 59.43.246.26, 59.43.46.82",
+    "trace_url": "https://globalping.io?measurement=2ZbzJL8ve0SmI8ayN00020w5D"
+  },
+  {
+    "ip": "103.137.22.116",
+    "port": 443,
+    "country": "TW",
+    "city": "台北",
+    "datacenter": "TPE",
+    "asn": 131151,
+    "organization": "Imcloud Technology Co., Ltd.",
+    "source_latency_ms": 14.0,
+    "baidu_delay_ms": 4560,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.187.178; Nanjing: 59.43.139.109, 59.43.248.202; Beijing: 59.43.19.94, 59.43.250.174",
+    "trace_url": "https://globalping.io?measurement=2H1AP11II48dPFBF100020w5E"
   }
 ]
