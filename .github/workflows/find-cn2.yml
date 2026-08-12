@@ -8,15 +8,13 @@ on:
         required: false
         default: "HK,JP,SG,TW,KR"
       max_candidates:
-        description: "每轮最多经百度前置测试多少个候选"
+        description: "百度前置测试上限（0=地区内全部）"
         required: false
-        default: "20"
+        default: "0"
       max_traces:
-        description: "最多对多少个可用候选做回程路由追踪"
+        description: "回程追踪上限（0=全部可用候选）"
         required: false
-        default: "10"
-  schedule:
-    - cron: "17 1 * * *"
+        default: "0"
 
 concurrency:
   group: find-cn2-proxies
@@ -28,7 +26,7 @@ permissions:
 jobs:
   find:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 360
     env:
       GLOBALPING_TOKEN: ${{ secrets.GLOBALPING_TOKEN }}
 
@@ -47,14 +45,13 @@ jobs:
       - name: Find CN2 proxies
         env:
           REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '20' }}
-          MAX_TRACES: ${{ github.event.inputs.max_traces || '10' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '0' }}
+          MAX_TRACES: ${{ github.event.inputs.max_traces || '0' }}
         run: |
           python -u scripts/find_cn2.py \
             --input Global-proxyip-443.csv \
             --output-dir cn2 \
             --regions "$REGIONS" \
-            --preselect "$MAX_CANDIDATES" \
             --max-candidates "$MAX_CANDIDATES" \
             --max-traces "$MAX_TRACES"
 

@@ -9,4 +9,4 @@
 
 公开仓库可直接使用 GitHub-hosted runner。Globalping 的匿名额度较小，建议在仓库 Secret `GLOBALPING_TOKEN` 中配置 API token；工作流未配置 token 时仍可运行，但可能提前耗尽追踪额度。
 
-手动运行：Actions → `Find CN2 proxies` → Run workflow。默认优先测试香港、日本、新加坡、台湾和韩国，参数可在触发时调整。
+手动运行：Actions → `Find CN2 proxies` → Run workflow。默认扫描香港、日本、新加坡、台湾和韩国的全部候选，并对全部可用候选做回程追踪；参数设为正整数时才限制数量。全量回程会消耗较多 Globalping 额度，因此工作流改为仅手动触发。

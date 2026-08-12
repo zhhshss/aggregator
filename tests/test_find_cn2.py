@@ -49,6 +49,20 @@ class FindCn2Test(unittest.TestCase):
         self.assertTrue(candidate.cn2)
         self.assertIn("59.43.132.149", candidate.cn2_evidence)
 
+    def test_unlimited_candidate_selection(self):
+        candidates = [
+            MODULE.Candidate(str(ip), 443, "JP", "", "NRT", 0, "", 1)
+            for ip in ("192.0.2.1", "192.0.2.2", "192.0.2.3")
+        ]
+        args = type("Args", (), {"max_candidates": 0, "concurrency": 1, "timeout_ms": 1})()
+        original = MODULE.test_candidate
+        MODULE.test_candidate = lambda candidate, timeout_ms: 1
+        try:
+            result = MODULE.validate_via_baidu(candidates, args)
+        finally:
+            MODULE.test_candidate = original
+        self.assertEqual(len(result), 3)
+
 
 if __name__ == "__main__":
     unittest.main()

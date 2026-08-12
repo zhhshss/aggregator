@@ -50,9 +50,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", required=True, type=Path, help="输入 CSV")
     parser.add_argument("--output-dir", default=Path("output"), type=Path)
     parser.add_argument("--regions", default=",".join(sorted(DEFAULT_REGIONS)))
-    parser.add_argument("--max-candidates", type=int, default=300)
-    parser.add_argument("--preselect", type=int, default=20)
-    parser.add_argument("--max-traces", type=int, default=10)
+    parser.add_argument(
+        "--max-candidates",
+        type=int,
+        default=0,
+        help="百度前置测试上限；0 表示测试地区内全部候选",
+    )
+    parser.add_argument(
+        "--max-traces",
+        type=int,
+        default=0,
+        help="回程路由追踪上限；0 表示追踪全部可用候选",
+    )
     parser.add_argument("--timeout-ms", type=int, default=8000)
     parser.add_argument("--concurrency", type=int, default=100)
     parser.add_argument("--globalping-token", default=os.getenv("GLOBALPING_TOKEN", ""))
@@ -161,7 +170,7 @@ def test_candidate(candidate: Candidate, timeout_ms: int) -> int | None:
 
 
 def validate_via_baidu(candidates: list[Candidate], args: argparse.Namespace) -> list[Candidate]:
-    selected = candidates[: args.max_candidates]
+    selected = candidates[: args.max_candidates] if args.max_candidates > 0 else candidates
     if not selected:
         return []
     with ThreadPoolExecutor(max_workers=args.concurrency) as executor:
@@ -177,31 +186,6 @@ def validate_via_baidu(candidates: list[Candidate], args: argparse.Namespace) ->
         (item for item in selected if item.baidu_delay_ms is not None),
         key=lambda item: (item.baidu_delay_ms or 10**9, item.ip),
     )
-
-
-def preselect_candidates(candidates: list[Candidate], limit: int) -> list[Candidate]:
-    """均匀保留地区候选，同时始终包含已知 CN2 ASN。"""
-    if len(candidates) <= limit:
-        return candidates
-    selected = [item for item in candidates if item.asn in CN2_ASNS]
-    selected_keys = {(item.ip, item.port) for item in selected}
-    countries = sorted({item.country for item in candidates})
-    per_country = max(1, (limit - len(selected)) // max(1, len(countries)))
-    for country in countries:
-        pool = [
-            item
-            for item in candidates
-            if item.country == country and (item.ip, item.port) not in selected_keys
-        ]
-        selected.extend(pool[:per_country])
-        selected_keys.update((item.ip, item.port) for item in pool[:per_country])
-    if len(selected) < limit:
-        selected.extend(
-            item
-            for item in candidates
-            if (item.ip, item.port) not in selected_keys
-        )
-    return selected[:limit]
 
 
 def globalping_headers(token: str) -> dict[str, str]:
@@ -271,7 +255,9 @@ def confirm_cn2(candidates: list[Candidate], args: argparse.Namespace) -> None:
     trace_targets = sorted(
         candidates,
         key=lambda item: (item.asn not in CN2_ASNS, item.baidu_delay_ms or 10**9),
-    )[: args.max_traces]
+    )
+    if args.max_traces > 0:
+        trace_targets = trace_targets[: args.max_traces]
     for index, candidate in enumerate(trace_targets, 1):
         try:
             measurement_id = create_measurement(candidate, args.globalping_token)
@@ -303,8 +289,8 @@ def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args:
     report = [
         "# CN2 代理筛选报告",
         "",
-        f"- CSV 候选数：{len(all_candidates)}",
-        f"- 经百度前置测试数：{min(len(all_candidates), args.max_candidates)}",
+        f"- CSV 地区候选数：{len(all_candidates)}",
+        f"- 经百度前置测试数：{len(all_candidates) if args.max_candidates <= 0 else min(len(all_candidates), args.max_candidates)}",
         f"- 可用数：{len(alive)}",
         f"- CN2 路由确认数：{len(confirmed)}",
         "",
@@ -327,8 +313,7 @@ def main() -> int:
     args = parse_args()
     regions = {item.strip().upper() for item in args.regions.split(",") if item.strip()}
     candidates = load_candidates(args.input, regions)
-    candidates = preselect_candidates(candidates, args.preselect)
-    print(f"预选 {len(candidates)} 个候选，开始经百度前置验证")
+    print(f"载入地区内 {len(candidates)} 个候选，开始经百度前置验证")
     alive = validate_via_baidu(candidates, args)
     print(f"百度前置可用候选 {len(alive)} 个，开始确认 CN2 路由")
     confirm_cn2(alive, args)
