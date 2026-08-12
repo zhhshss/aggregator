@@ -10,11 +10,11 @@ on:
       max_candidates:
         description: "每轮最多经百度前置测试多少个候选"
         required: false
-        default: "80"
+        default: "20"
       max_traces:
         description: "最多对多少个可用候选做回程路由追踪"
         required: false
-        default: "50"
+        default: "10"
   schedule:
     - cron: "17 1 * * *"
 
@@ -47,8 +47,8 @@ jobs:
       - name: Find CN2 proxies
         env:
           REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '80' }}
-          MAX_TRACES: ${{ github.event.inputs.max_traces || '50' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '20' }}
+          MAX_TRACES: ${{ github.event.inputs.max_traces || '10' }}
         run: |
           python -u scripts/find_cn2.py \
             --input Global-proxyip-443.csv \
