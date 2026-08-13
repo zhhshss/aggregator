@@ -1653,6 +1653,25 @@
     "route_evidence": ""
   },
   {
+    "ip": "122.10.114.43",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 24544,
+    "organization": "Law's Cloud Infrastructure Limited",
+    "source_latency_ms": 4.0,
+    "baidu_delay_ms": 1622,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.183.110; Shenzhen: 59.43.248.250",
+    "trace_url": "https://globalping.io?measurement=20N5IRlm5nr5XSbJv00020wHG",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:15:03Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.183.110; Shenzhen: 59.43.248.250"
+  },
+  {
     "ip": "165.154.21.142",
     "port": 443,
     "country": "HK",
@@ -2202,6 +2221,25 @@
     "traced_at": "2026-08-13T05:08:48Z",
     "route_class": "cn2_gt",
     "route_evidence": "Guangzhou: 59.43.144.209"
+  },
+  {
+    "ip": "45.93.30.57",
+    "port": 443,
+    "country": "KR",
+    "city": "首尔",
+    "datacenter": "ICN",
+    "asn": 138195,
+    "organization": "MOACK.Co.LTD",
+    "source_latency_ms": 37.0,
+    "baidu_delay_ms": 1283,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Nanjing: 59.43.132.153, 59.43.39.186",
+    "trace_url": "https://globalping.io?measurement=2owrKCNmxxSacyfGz00020wHG",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:15:01Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Nanjing: 59.43.132.153, 59.43.39.186"
   },
   {
     "ip": "185.194.54.137",
