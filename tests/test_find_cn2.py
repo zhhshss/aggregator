@@ -15,6 +15,18 @@ sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
 
 
+def trace_args(max_traces=0, proxy_file=None, trace_concurrency=1):
+    return type(
+        "Args", (),
+        {
+            "max_traces": max_traces,
+            "globalping_token": "",
+            "globalping_proxy_file": proxy_file,
+            "trace_concurrency": trace_concurrency,
+        },
+    )()
+
+
 class FindCn2Test(unittest.TestCase):
     def test_load_candidates_prioritizes_cn2_asn(self):
         fields = [
@@ -168,10 +180,7 @@ class FindCn2Test(unittest.TestCase):
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
             baidu_delay_ms=1, tested=True, trace_status="not_cn2",
         )
-        args = type(
-            "Args", (),
-            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
-        )()
+        args = trace_args()
         original = MODULE.create_measurement
         MODULE.create_measurement = lambda candidate, token, proxy="": self.fail("不应重复追踪已完成候选")
         try:
@@ -190,10 +199,7 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type(
-            "Args", (),
-            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
-        )()
+        args = trace_args()
         checkpoints = []
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
@@ -218,10 +224,7 @@ class FindCn2Test(unittest.TestCase):
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
             baidu_delay_ms=1, tested=True,
         )
-        args = type(
-            "Args", (),
-            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
-        )()
+        args = trace_args()
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
         MODULE.create_measurement = lambda item, token, proxy="": "measurement-id"
@@ -245,10 +248,7 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type(
-            "Args", (),
-            {"max_traces": 1, "globalping_token": "", "globalping_proxy_file": None},
-        )()
+        args = trace_args(max_traces=1)
         traced_ips = []
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
@@ -293,10 +293,7 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type(
-            "Args", (),
-            {"max_traces": 1, "globalping_token": "", "globalping_proxy_file": None},
-        )()
+        args = trace_args(max_traces=1)
         traced_ips = []
         original = MODULE.create_measurement
         MODULE.create_measurement = lambda item, token, proxy="": traced_ips.append(item.ip) or "quota"
@@ -318,14 +315,7 @@ class FindCn2Test(unittest.TestCase):
                 "http://user:pass@192.0.2.11:3129\n",
                 encoding="utf-8",
             )
-            args = type(
-                "Args", (),
-                {
-                    "max_traces": 1,
-                    "globalping_token": "",
-                    "globalping_proxy_file": proxy_path,
-                },
-            )()
+            args = trace_args(max_traces=1, proxy_file=proxy_path)
             attempted = []
             original_create = MODULE.create_measurement
             original_wait = MODULE.wait_measurement
@@ -348,6 +338,39 @@ class FindCn2Test(unittest.TestCase):
             ],
         )
         self.assertEqual(candidate.trace_status, "other")
+
+    def test_parallel_traces_use_different_initial_proxies(self):
+        candidates = [
+            MODULE.Candidate(
+                f"192.0.2.{index}", 443, "JP", "", "NRT", 0, "", index,
+                baidu_delay_ms=index, tested=True,
+            )
+            for index in range(1, 4)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            proxy_path = Path(directory) / "proxies.txt"
+            proxy_path.write_text(
+                "http://user:pass@192.0.2.10:3129\n"
+                "http://user:pass@192.0.2.11:3129\n"
+                "http://user:pass@192.0.2.12:3129\n",
+                encoding="utf-8",
+            )
+            args = trace_args(max_traces=3, proxy_file=proxy_path, trace_concurrency=3)
+            attempted = {}
+            original_create = MODULE.create_measurement
+            original_wait = MODULE.wait_measurement
+            MODULE.create_measurement = lambda item, token, proxy="": (
+                attempted.setdefault(item.ip, proxy) or item.ip
+            )
+            MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
+                "status": "finished", "results": []
+            }
+            try:
+                MODULE.confirm_cn2(candidates, args)
+            finally:
+                MODULE.create_measurement = original_create
+                MODULE.wait_measurement = original_wait
+        self.assertEqual(len(set(attempted.values())), 3)
 
 
 if __name__ == "__main__":

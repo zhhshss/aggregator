@@ -17,6 +17,10 @@ on:
         description: "回程追踪上限（0=全部可用候选）"
         required: false
         default: "60"
+      trace_concurrency:
+        description: "并发路由追踪数"
+        required: false
+        default: "20"
 
 concurrency:
   group: find-cn2-proxies
@@ -28,7 +32,7 @@ permissions:
 jobs:
   find:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 360
     env:
       GLOBALPING_TOKEN: ${{ secrets.GLOBALPING_TOKEN }}
       GLOBALPING_PROXY_POOL: ${{ secrets.GLOBALPING_PROXY_POOL }}
@@ -63,6 +67,7 @@ jobs:
           REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '0' }}
           MAX_TRACES: ${{ github.event.inputs.max_traces || '60' }}
+          TRACE_CONCURRENCY: ${{ github.event.inputs.trace_concurrency || '20' }}
         run: |
           python -u scripts/find_cn2.py \
             --input Global-proxyip-443.csv \
@@ -70,6 +75,7 @@ jobs:
             --regions "$REGIONS" \
             --max-candidates "$MAX_CANDIDATES" \
             --max-traces "$MAX_TRACES" \
+            --trace-concurrency "$TRACE_CONCURRENCY" \
             --globalping-proxy-file "$RUNNER_TEMP/globalping-proxies.txt"
 
       - name: Save emergency progress artifact

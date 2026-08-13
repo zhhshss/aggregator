@@ -17,7 +17,9 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
+from itertools import cycle
 from pathlib import Path
+from threading import Lock
 from typing import Callable
 
 CN2_ASNS = {4809, 23764}
@@ -72,6 +74,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--timeout-ms", type=int, default=8000)
     parser.add_argument("--concurrency", type=int, default=100)
+    parser.add_argument("--trace-concurrency", type=int, default=1)
     parser.add_argument("--globalping-token", default=os.getenv("GLOBALPING_TOKEN", ""))
     parser.add_argument(
         "--globalping-proxy-file",
@@ -385,7 +388,6 @@ def confirm_cn2(
     checkpoint: Callable[[], None] | None = None,
 ) -> None:
     proxy_pool = load_proxy_pool(getattr(args, "globalping_proxy_file", None))
-    proxy_index = 0
     trace_targets = sorted(
         (
             candidate
@@ -402,26 +404,33 @@ def confirm_cn2(
     )
     if args.max_traces > 0:
         trace_targets = trace_targets[: args.max_traces]
-    for index, candidate in enumerate(trace_targets, 1):
+    trace_concurrency = max(1, min(getattr(args, "trace_concurrency", 1), len(trace_targets) or 1))
+    proxy_cycle = cycle(proxy_pool or [""])
+    proxy_lock = Lock()
+    checkpoint_lock = Lock()
+
+    def next_proxy() -> str:
+        with proxy_lock:
+            return next(proxy_cycle)
+
+    def save_checkpoint() -> None:
+        if checkpoint:
+            with checkpoint_lock:
+                checkpoint()
+
+    def trace_one(index: int, candidate: Candidate) -> str:
         try:
             measurement_id = "quota"
             measurement_proxy = ""
-            proxy_attempts: list[str] = []
-            if args.globalping_token or not proxy_pool:
-                proxy_attempts.append("")
-            proxy_attempts.extend(proxy_pool)
-            if not proxy_attempts:
-                proxy_attempts.append("")
-            for attempt in range(len(proxy_attempts)):
-                if proxy_pool and proxy_attempts[0] == "":
-                    measurement_proxy = "" if attempt == 0 else proxy_pool[proxy_index % len(proxy_pool)]
-                    if attempt > 0:
-                        proxy_index += 1
-                elif proxy_pool:
-                    measurement_proxy = proxy_pool[proxy_index % len(proxy_pool)]
-                    proxy_index += 1
-                else:
+            attempts = len(proxy_pool) + (1 if args.globalping_token or not proxy_pool else 0)
+            assigned_proxy = next_proxy() if proxy_pool else ""
+            for attempt in range(max(1, attempts)):
+                if args.globalping_token and attempt == 0:
                     measurement_proxy = ""
+                elif attempt == (1 if args.globalping_token else 0):
+                    measurement_proxy = assigned_proxy
+                else:
+                    measurement_proxy = next_proxy()
                 try:
                     measurement_id = create_measurement(
                         candidate, args.globalping_token, measurement_proxy
@@ -433,21 +442,18 @@ def confirm_cn2(
                 if measurement_id != "quota":
                     break
             if measurement_id == "quota":
-                print("Globalping 代理池配额不足，停止新增路由追踪", file=sys.stderr)
-                break
+                return "quota"
             if measurement_id == "unavailable":
                 print(f"没有适合 {candidate.ip} 的路由探针，留待后续重试", file=sys.stderr)
                 candidate.trace_status = "unavailable"
                 candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                if checkpoint:
-                    checkpoint()
-                continue
+                save_checkpoint()
+                return "done"
             if not measurement_id:
                 print(f"未取得 {candidate.ip} 的路由任务编号，保留待重试", file=sys.stderr)
                 candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-                if checkpoint:
-                    checkpoint()
-                continue
+                save_checkpoint()
+                return "done"
             candidate.trace_url = f"https://globalping.io?measurement={measurement_id}"
             measurement = wait_measurement(
                 measurement_id, args.globalping_token, measurement_proxy
@@ -455,19 +461,33 @@ def confirm_cn2(
             candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             if measurement.get("status") != "finished":
                 print(f"路由追踪未完成 {candidate.ip}，保留待重试", file=sys.stderr)
-                if checkpoint:
-                    checkpoint()
-                continue
+                save_checkpoint()
+                return "done"
             evaluate_trace(candidate, measurement)
             candidate.trace_status = candidate.route_class
-            if checkpoint:
-                checkpoint()
+            save_checkpoint()
             print(f"[{index}/{len(trace_targets)}] {candidate.ip}: CN2={candidate.cn2}")
+            return "done"
         except (OSError, urllib.error.URLError, json.JSONDecodeError) as error:
             print(f"路由追踪失败 {candidate.ip}: {error}", file=sys.stderr)
             candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            if checkpoint:
-                checkpoint()
+            save_checkpoint()
+            return "done"
+
+    quota_hits = 0
+    with ThreadPoolExecutor(max_workers=trace_concurrency) as executor:
+        futures = {
+            executor.submit(trace_one, index, candidate): candidate
+            for index, candidate in enumerate(trace_targets, 1)
+        }
+        for future in as_completed(futures):
+            if future.result() == "quota":
+                quota_hits += 1
+    if quota_hits:
+        print(
+            f"Globalping 代理池配额不足，{quota_hits} 个候选保留待续扫",
+            file=sys.stderr,
+        )
 
 
 def write_progress(candidates: list[Candidate], path: Path) -> None:
