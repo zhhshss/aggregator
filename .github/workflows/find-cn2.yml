@@ -1,6 +1,8 @@
 name: Find CN2 proxies
 
 on:
+  schedule:
+    - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
       regions:
@@ -14,11 +16,11 @@ on:
       max_traces:
         description: "回程追踪上限（0=全部可用候选）"
         required: false
-        default: "0"
+        default: "60"
 
 concurrency:
   group: find-cn2-proxies
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -26,7 +28,7 @@ permissions:
 jobs:
   find:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 90
     env:
       GLOBALPING_TOKEN: ${{ secrets.GLOBALPING_TOKEN }}
 
@@ -43,10 +45,12 @@ jobs:
         run: test -s "Global-proxyip-443.csv"
 
       - name: Find CN2 proxies
+        id: scan
+        continue-on-error: true
         env:
           REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '0' }}
-          MAX_TRACES: ${{ github.event.inputs.max_traces || '0' }}
+          MAX_TRACES: ${{ github.event.inputs.max_traces || '60' }}
         run: |
           python -u scripts/find_cn2.py \
             --input Global-proxyip-443.csv \
@@ -55,7 +59,16 @@ jobs:
             --max-candidates "$MAX_CANDIDATES" \
             --max-traces "$MAX_TRACES"
 
+      - name: Save emergency progress artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cn2-progress-${{ github.run_id }}
+          path: cn2/progress.csv
+          if-no-files-found: warn
+
       - name: Upload report artifact
+        if: ${{ steps.scan.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: cn2-proxies-${{ github.run_id }}
@@ -63,6 +76,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish latest report
+        if: ${{ steps.scan.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -82,3 +96,28 @@ jobs:
             sleep $((attempt * 3))
           done
           exit 1
+
+      - name: Publish emergency progress
+        if: ${{ steps.scan.outcome != 'success' && hashFiles('cn2/progress.csv') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cn2/progress.csv
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore: checkpoint CN2 scan progress"
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Checkpoint attempt $attempt failed; retrying" >&2
+            sleep $((attempt * 3))
+          done
+          exit 1
+
+      - name: Fail if scan failed
+        if: ${{ steps.scan.outcome != 'success' }}
+        run: exit 1

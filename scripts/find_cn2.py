@@ -17,6 +17,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Callable
 
 CN2_ASNS = {4809, 23764}
 DEFAULT_REGIONS = {"HK", "JP", "SG", "TW", "KR"}
@@ -43,6 +44,8 @@ class Candidate:
     cn2: bool = False
     cn2_evidence: str = ""
     trace_url: str = ""
+    trace_status: str = "pending"
+    traced_at: str = ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -72,6 +75,60 @@ def parse_args() -> argparse.Namespace:
 def parse_latency(value: str) -> float | None:
     match = re.search(r"[\d.]+", value or "")
     return float(match.group()) if match else None
+
+
+def candidate_key(candidate: Candidate) -> str:
+    return f"{candidate.ip}:{candidate.port}"
+
+
+def parse_bool(value: object) -> bool:
+    return str(value).strip().lower() in {"1", "true", "yes"}
+
+
+def load_state(path: Path) -> dict[str, Candidate]:
+    if not path.is_file():
+        return {}
+    state: dict[str, Candidate] = {}
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                is_cn2 = parse_bool(row.get("cn2", ""))
+                trace_status = row.get("trace_status") or ("cn2" if is_cn2 else "pending")
+                candidate = Candidate(
+                    ip=str(ipaddress.ip_address(row["ip"].strip())),
+                    port=int(row["port"]),
+                    country=row.get("country", ""),
+                    city=row.get("city", ""),
+                    datacenter=row.get("datacenter", ""),
+                    asn=int(row.get("asn") or 0),
+                    organization=row.get("organization", ""),
+                    source_latency_ms=parse_latency(row.get("source_latency_ms", "")),
+                    baidu_delay_ms=int(row["baidu_delay_ms"]) if row.get("baidu_delay_ms") else None,
+                    tested=parse_bool(row.get("tested", "")),
+                    cn2=is_cn2,
+                    cn2_evidence=row.get("cn2_evidence", ""),
+                    trace_url=row.get("trace_url", ""),
+                    trace_status=trace_status,
+                    traced_at=row.get("traced_at", ""),
+                )
+            except (KeyError, ValueError):
+                continue
+            state[candidate_key(candidate)] = candidate
+    return state
+
+
+def merge_state(candidates: list[Candidate], state: dict[str, Candidate]) -> None:
+    for candidate in candidates:
+        previous = state.get(candidate_key(candidate))
+        if previous is None:
+            continue
+        candidate.baidu_delay_ms = previous.baidu_delay_ms
+        candidate.tested = previous.tested
+        candidate.cn2 = previous.cn2
+        candidate.cn2_evidence = previous.cn2_evidence
+        candidate.trace_url = previous.trace_url
+        candidate.trace_status = previous.trace_status
+        candidate.traced_at = previous.traced_at
 
 
 def load_candidates(path: Path, regions: set[str]) -> list[Candidate]:
@@ -171,17 +228,15 @@ def test_candidate(candidate: Candidate, timeout_ms: int) -> int | None:
 
 def validate_via_baidu(candidates: list[Candidate], args: argparse.Namespace) -> list[Candidate]:
     selected = candidates[: args.max_candidates] if args.max_candidates > 0 else candidates
-    if not selected:
-        return []
     with ThreadPoolExecutor(max_workers=args.concurrency) as executor:
         futures = {
-            executor.submit(test_candidate, candidate, args.timeout_ms): index
-            for index, candidate in enumerate(selected)
+            executor.submit(test_candidate, candidate, args.timeout_ms): candidate
+            for candidate in selected
         }
         for future in as_completed(futures):
-            index = futures[future]
-            selected[index].tested = True
-            selected[index].baidu_delay_ms = future.result()
+            candidate = futures[future]
+            candidate.tested = True
+            candidate.baidu_delay_ms = future.result()
     return sorted(
         (item for item in selected if item.baidu_delay_ms is not None),
         key=lambda item: (item.baidu_delay_ms or 10**9, item.ip),
@@ -251,10 +306,24 @@ def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
     candidate.cn2_evidence = "; ".join(evidence)
 
 
-def confirm_cn2(candidates: list[Candidate], args: argparse.Namespace) -> None:
+def confirm_cn2(
+    candidates: list[Candidate],
+    args: argparse.Namespace,
+    checkpoint: Callable[[], None] | None = None,
+) -> None:
     trace_targets = sorted(
-        candidates,
-        key=lambda item: (item.asn not in CN2_ASNS, item.baidu_delay_ms or 10**9),
+        (
+            candidate
+            for candidate in candidates
+            if candidate.trace_status in {"pending", "unavailable"}
+        ),
+        key=lambda item: (
+            item.trace_status != "pending",
+            bool(item.traced_at),
+            item.traced_at,
+            item.asn not in CN2_ASNS,
+            item.baidu_delay_ms or 10**9,
+        ),
     )
     if args.max_traces > 0:
         trace_targets = trace_targets[: args.max_traces]
@@ -265,21 +334,59 @@ def confirm_cn2(candidates: list[Candidate], args: argparse.Namespace) -> None:
                 print("Globalping 配额不足，停止新增路由追踪", file=sys.stderr)
                 break
             if measurement_id == "unavailable":
-                print(f"没有适合 {candidate.ip} 的路由探针，跳过", file=sys.stderr)
+                print(f"没有适合 {candidate.ip} 的路由探针，留待后续重试", file=sys.stderr)
+                candidate.trace_status = "unavailable"
+                candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                if checkpoint:
+                    checkpoint()
+                continue
+            if not measurement_id:
+                print(f"未取得 {candidate.ip} 的路由任务编号，保留待重试", file=sys.stderr)
+                candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                if checkpoint:
+                    checkpoint()
                 continue
             candidate.trace_url = f"https://globalping.io?measurement={measurement_id}"
-            evaluate_trace(candidate, wait_measurement(measurement_id, args.globalping_token))
+            measurement = wait_measurement(measurement_id, args.globalping_token)
+            candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            if measurement.get("status") != "finished":
+                print(f"路由追踪未完成 {candidate.ip}，保留待重试", file=sys.stderr)
+                if checkpoint:
+                    checkpoint()
+                continue
+            evaluate_trace(candidate, measurement)
+            candidate.trace_status = "cn2" if candidate.cn2 else "not_cn2"
+            if checkpoint:
+                checkpoint()
             print(f"[{index}/{len(trace_targets)}] {candidate.ip}: CN2={candidate.cn2}")
         except (OSError, urllib.error.URLError, json.JSONDecodeError) as error:
             print(f"路由追踪失败 {candidate.ip}: {error}", file=sys.stderr)
+            candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            if checkpoint:
+                checkpoint()
+
+
+def write_progress(candidates: list[Candidate], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_suffix(f"{path.suffix}.tmp")
+    headers = list(Candidate.__dataclass_fields__)
+    with temporary_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=headers, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(asdict(item) for item in candidates)
+    temporary_path.replace(path)
 
 
 def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args: argparse.Namespace) -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    confirmed = [item for item in alive if item.cn2]
+    state_path = args.output_dir / "progress.csv"
+    confirmed = [item for item in all_candidates if item.cn2]
+    traced = [item for item in all_candidates if item.trace_status in {"cn2", "not_cn2"}]
+    pending = [item for item in alive if item.trace_status in {"pending", "unavailable"}]
     headers = list(Candidate.__dataclass_fields__)
+    write_progress(all_candidates, state_path)
     with (args.output_dir / "cn2.csv").open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=headers)
+        writer = csv.DictWriter(handle, fieldnames=headers, lineterminator="\n")
         writer.writeheader()
         writer.writerows(asdict(item) for item in confirmed)
     (args.output_dir / "cn2.json").write_text(
@@ -292,6 +399,8 @@ def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args:
         f"- CSV 地区候选数：{len(all_candidates)}",
         f"- 经百度前置测试数：{len(all_candidates) if args.max_candidates <= 0 else min(len(all_candidates), args.max_candidates)}",
         f"- 可用数：{len(alive)}",
+        f"- 已完成路由追踪：{len(traced)}",
+        f"- 待路由追踪：{len(pending)}",
         f"- CN2 路由确认数：{len(confirmed)}",
         "",
         "判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。",
@@ -313,10 +422,20 @@ def main() -> int:
     args = parse_args()
     regions = {item.strip().upper() for item in args.regions.split(",") if item.strip()}
     candidates = load_candidates(args.input, regions)
-    print(f"载入地区内 {len(candidates)} 个候选，开始经百度前置验证")
+    state_path = args.output_dir / "progress.csv"
+    state = load_state(state_path)
+    if not state:
+        state = load_state(args.output_dir / "cn2.csv")
+    merge_state(candidates, state)
+    print(f"载入地区内 {len(candidates)} 个候选，恢复 {len(state)} 条进度")
     alive = validate_via_baidu(candidates, args)
-    print(f"百度前置可用候选 {len(alive)} 个，开始确认 CN2 路由")
-    confirm_cn2(alive, args)
+    write_progress(candidates, state_path)
+    pending = sum(
+        candidate.trace_status in {"pending", "unavailable"}
+        for candidate in alive
+    )
+    print(f"百度前置可用候选 {len(alive)} 个，待路由追踪 {pending} 个")
+    confirm_cn2(alive, args, lambda: write_progress(candidates, state_path))
     write_outputs(candidates, alive, args)
     return 0
 
