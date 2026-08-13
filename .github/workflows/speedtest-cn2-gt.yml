@@ -1,4 +1,4 @@
-name: Speedtest CN2 GT proxies
+name: Speedtest proxy route classes
 
 on:
   workflow_dispatch:
@@ -6,7 +6,11 @@ on:
       bytes:
         description: "每个 IP 下载字节数"
         required: false
-        default: "262144"
+        default: "2097152"
+      route_class:
+        description: "测速线路档位"
+        required: false
+        default: "other"
       concurrency:
         description: "并发测速数"
         required: false
@@ -29,22 +33,25 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Speedtest all CN2 GT proxies
+      - name: Speedtest selected route class
         env:
-          TEST_BYTES: ${{ github.event.inputs.bytes || '262144' }}
+          TEST_BYTES: ${{ github.event.inputs.bytes || '2097152' }}
           TEST_CONCURRENCY: ${{ github.event.inputs.concurrency || '10' }}
+          TEST_ROUTE_CLASS: ${{ github.event.inputs.route_class || 'other' }}
         run: |
           python -u "scripts/speedtest_cn2_gt.py" \
             --input "cn2/progress.csv" \
-            --output-dir "cn2-speedtest" \
+            --output-dir "proxy-speedtest/$TEST_ROUTE_CLASS" \
+            --route-class "$TEST_ROUTE_CLASS" \
             --bytes "$TEST_BYTES" \
+            --timeout "45" \
             --concurrency "$TEST_CONCURRENCY"
 
       - name: Upload speedtest report
         uses: actions/upload-artifact@v4
         with:
-          name: cn2-gt-speedtest-${{ github.run_id }}
-          path: cn2-speedtest/
+          name: proxy-speedtest-${{ github.run_id }}
+          path: proxy-speedtest/
           retention-days: 14
           if-no-files-found: error
 
@@ -54,10 +61,10 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "cn2-speedtest/"
+          git add "proxy-speedtest/"
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "chore: update CN2 GT speedtest"
+          git commit -m "chore: update proxy speedtest"
           git pull --rebase origin main
           git push origin HEAD:main

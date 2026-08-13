@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""通过百度代理对所有 CN2 GT 候选执行 Cloudflare 下载测速。"""
+"""通过百度代理对指定线路档位执行 Cloudflare 下载测速。"""
 
 from __future__ import annotations
 
@@ -29,6 +29,7 @@ class Result:
     port: int
     country: str
     datacenter: str
+    route_class: str
     status: str
     speed_mbps: float | None
     speed_mbytes_s: float | None
@@ -40,13 +41,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output-dir", default=Path("cn2-speedtest"), type=Path)
-    parser.add_argument("--bytes", type=int, default=262_144)
-    parser.add_argument("--timeout", type=int, default=20)
+    parser.add_argument("--route-class", default="cn2_gt")
+    parser.add_argument("--bytes", type=int, default=2_097_152)
+    parser.add_argument("--timeout", type=int, default=45)
     parser.add_argument("--concurrency", type=int, default=10)
     return parser.parse_args()
 
 
-def load_candidates(path: Path) -> list[dict[str, str]]:
+def load_candidates(path: Path, route_class: str = "cn2_gt") -> list[dict[str, str]]:
     candidates: list[dict[str, str]] = []
     seen: set[tuple[str, int]] = set()
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
@@ -56,7 +58,7 @@ def load_candidates(path: Path) -> list[dict[str, str]]:
                 port = int(row["port"])
             except (KeyError, ValueError):
                 continue
-            if row.get("route_class") != "cn2_gt" or (ip, port) in seen:
+            if row.get("route_class") != route_class or (ip, port) in seen:
                 continue
             seen.add((ip, port))
             candidates.append(
@@ -65,6 +67,7 @@ def load_candidates(path: Path) -> list[dict[str, str]]:
                     "port": str(port),
                     "country": row.get("country", ""),
                     "datacenter": row.get("datacenter", ""),
+                    "route_class": row.get("route_class", ""),
                 }
             )
     return candidates
@@ -112,6 +115,7 @@ def speedtest(row: dict[str, str], size: int, timeout: int) -> Result:
             int(row["port"]),
             row["country"],
             row["datacenter"],
+            row["route_class"],
             "ok" if successful else "failed",
             round(speed * 8 / 1_000_000, 3) if successful else None,
             round(speed / 1_000_000, 3) if successful else None,
@@ -121,11 +125,14 @@ def speedtest(row: dict[str, str], size: int, timeout: int) -> Result:
     except (OSError, ValueError, subprocess.TimeoutExpired):
         return Result(
             row["ip"], int(row["port"]), row["country"], row["datacenter"],
+            row["route_class"],
             "failed", None, None, 0, None,
         )
 
 
-def write_outputs(results: list[Result], output_dir: Path, size: int) -> None:
+def write_outputs(
+    results: list[Result], output_dir: Path, size: int, route_class: str = "cn2_gt"
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ordered = sorted(
         results,
@@ -136,7 +143,7 @@ def write_outputs(results: list[Result], output_dir: Path, size: int) -> None:
             item.ip,
         ),
     )
-    with (output_dir / "cn2_gt_speedtest.csv").open(
+    with (output_dir / f"{route_class}_speedtest.csv").open(
         "w", encoding="utf-8", newline=""
     ) as handle:
         writer = csv.DictWriter(handle, fieldnames=Result.__dataclass_fields__, lineterminator="\n")
@@ -145,7 +152,7 @@ def write_outputs(results: list[Result], output_dir: Path, size: int) -> None:
 
     successful = [item for item in ordered if item.status == "ok"]
     lines = [
-        "# CN2 GT Cloudflare 下载测速",
+        f"# {route_class} Cloudflare 下载测速",
         "",
         f"- 测速候选：{len(ordered)}",
         f"- 成功：{len(successful)}",
@@ -167,9 +174,9 @@ def write_outputs(results: list[Result], output_dir: Path, size: int) -> None:
 
 def main() -> int:
     args = parse_args()
-    candidates = load_candidates(args.input)
+    candidates = load_candidates(args.input, args.route_class)
     if not candidates:
-        raise SystemExit("没有 CN2 GT 候选")
+        raise SystemExit(f"没有 {args.route_class} 候选")
     results: list[Result] = []
     with ThreadPoolExecutor(max_workers=max(1, args.concurrency)) as executor:
         futures = {
@@ -183,7 +190,7 @@ def main() -> int:
                 f"[{index}/{len(candidates)}] {result.ip}: "
                 f"{result.speed_mbytes_s if result.speed_mbytes_s is not None else '-'} MB/s"
             )
-    write_outputs(results, args.output_dir, args.bytes)
+    write_outputs(results, args.output_dir, args.bytes, args.route_class)
     return 0
 
 
