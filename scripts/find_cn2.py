@@ -18,7 +18,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from threading import Event, Lock
+from threading import Lock
 from typing import Callable
 
 CN2_ASNS = {4809, 23764}
@@ -406,7 +406,6 @@ def confirm_cn2(
     trace_concurrency = max(1, min(getattr(args, "trace_concurrency", 1), len(trace_targets) or 1))
     proxy_locks = [Lock() for _ in proxy_pool]
     checkpoint_lock = Lock()
-    quota_exhausted = Event()
 
     def save_checkpoint() -> None:
         if checkpoint:
@@ -414,8 +413,6 @@ def confirm_cn2(
                 checkpoint()
 
     def trace_one(index: int, candidate: Candidate) -> str:
-        if quota_exhausted.is_set():
-            return "quota"
         try:
             measurement_id = "quota"
             measurement_proxy = ""
@@ -449,7 +446,6 @@ def confirm_cn2(
                 if measurement_id != "quota":
                     break
             if measurement_id == "quota":
-                quota_exhausted.set()
                 return "quota"
             if measurement_id == "unavailable":
                 print(f"没有适合 {candidate.ip} 的路由探针，留待后续重试", file=sys.stderr)

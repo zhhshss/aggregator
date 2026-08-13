@@ -372,6 +372,39 @@ class FindCn2Test(unittest.TestCase):
                 MODULE.wait_measurement = original_wait
         self.assertEqual(len(set(attempted.values())), 3)
 
+    def test_one_candidate_quota_does_not_cancel_remaining_candidates(self):
+        candidates = [
+            MODULE.Candidate(
+                f"192.0.2.{index}", 443, "JP", "", "NRT", 0, "", index,
+                baidu_delay_ms=index, tested=True,
+            )
+            for index in range(1, 4)
+        ]
+        args = trace_args(max_traces=0, trace_concurrency=1)
+        attempted = []
+        original_create = MODULE.create_measurement
+        original_wait = MODULE.wait_measurement
+        MODULE.create_measurement = lambda item, token, proxy="": (
+            attempted.append(item.ip)
+            or ("quota" if item.ip == "192.0.2.1" else item.ip)
+        )
+        MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
+            "status": "finished", "results": []
+        }
+        try:
+            MODULE.confirm_cn2(candidates, args)
+        finally:
+            MODULE.create_measurement = original_create
+            MODULE.wait_measurement = original_wait
+        self.assertEqual(
+            attempted,
+            ["192.0.2.1", "192.0.2.2", "192.0.2.3"],
+        )
+        self.assertEqual(
+            [item.trace_status for item in candidates],
+            ["pending", "other", "other"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
