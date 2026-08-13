@@ -2432,6 +2432,25 @@
     "route_evidence": "Guangzhou: 59.43.144.209, 59.43.183.2, 59.43.39.238; Beijing: 59.43.246.26, 59.43.39.86, 59.43.46.82"
   },
   {
+    "ip": "151.242.224.43",
+    "port": 443,
+    "country": "TW",
+    "city": "台北",
+    "datacenter": "TPE",
+    "asn": 15143,
+    "organization": "Tomorin Network, LLC",
+    "source_latency_ms": 58.0,
+    "baidu_delay_ms": 1453,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.248.202; Nanjing: 59.43.139.117, 59.43.248.202",
+    "trace_url": "https://globalping.io?measurement=2UHHD7KqKCX0NKm1f00020wGU",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:27:01Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.248.202; Nanjing: 59.43.139.117, 59.43.248.202"
+  },
+  {
     "ip": "154.36.154.29",
     "port": 443,
     "country": "JP",
