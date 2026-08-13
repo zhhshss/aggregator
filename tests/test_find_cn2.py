@@ -175,6 +175,34 @@ class FindCn2Test(unittest.TestCase):
         self.assertTrue(candidate.cn2)
         self.assertEqual(candidate.trace_status, "cn2")
 
+    def test_parallel_progress_merge_keeps_both_completed_results(self):
+        first = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            trace_status="other", route_class="other",
+        )
+        second = MODULE.Candidate(
+            "192.0.2.2", 443, "JP", "", "NRT", 0, "", 1,
+            trace_status="cn2_gt", route_class="cn2_gt", cn2=True,
+        )
+        pending_first = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+        )
+        pending_second = MODULE.Candidate(
+            "192.0.2.2", 443, "JP", "", "NRT", 0, "", 1,
+        )
+        merged = MODULE.merge_completed_states(
+            {
+                MODULE.candidate_key(first): first,
+                MODULE.candidate_key(pending_second): pending_second,
+            },
+            {
+                MODULE.candidate_key(pending_first): pending_first,
+                MODULE.candidate_key(second): second,
+            },
+        )
+        self.assertEqual(merged[MODULE.candidate_key(first)].trace_status, "other")
+        self.assertEqual(merged[MODULE.candidate_key(second)].trace_status, "cn2_gt")
+
     def test_confirm_skips_completed_candidates(self):
         completed = MODULE.Candidate(
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,

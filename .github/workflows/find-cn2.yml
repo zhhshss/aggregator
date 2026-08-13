@@ -108,7 +108,38 @@ jobs:
           fi
           git commit -m "chore: update CN2 proxy report"
           for attempt in 1 2 3; do
-            if git pull --rebase origin main && git push origin HEAD:main; then
+            if git fetch origin main; then
+              git show "origin/main:cn2/progress.csv" > "$RUNNER_TEMP/remote-progress.csv" \
+                || : > "$RUNNER_TEMP/remote-progress.csv"
+              REMOTE_PROGRESS="$RUNNER_TEMP/remote-progress.csv" python - <<'PY'
+              import importlib.util
+              import os
+              import sys
+              from pathlib import Path
+
+              spec = importlib.util.spec_from_file_location("find_cn2", "scripts/find_cn2.py")
+              module = importlib.util.module_from_spec(spec)
+              assert spec.loader
+              sys.modules[spec.name] = module
+              spec.loader.exec_module(module)
+              local = module.load_state(Path("cn2/progress.csv"))
+              remote = module.load_state(Path(os.environ["REMOTE_PROGRESS"]))
+              merged = module.merge_completed_states(remote, local)
+              candidates = list(merged.values())
+              module.write_outputs(
+                  candidates,
+                  [item for item in candidates if item.baidu_delay_ms is not None],
+                  type("Args", (), {"output_dir": Path("cn2"), "max_candidates": 0})(),
+              )
+              PY
+              git reset --soft origin/main
+              git add cn2/
+              if git diff --cached --quiet; then
+                exit 0
+              fi
+              git commit -m "chore: update CN2 proxy report"
+            fi
+            if git push origin HEAD:main; then
               exit 0
             fi
             echo "Publish attempt $attempt failed; retrying" >&2

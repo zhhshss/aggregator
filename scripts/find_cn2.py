@@ -155,6 +155,21 @@ def merge_state(candidates: list[Candidate], state: dict[str, Candidate]) -> Non
         candidate.route_evidence = previous.route_evidence
 
 
+def merge_completed_states(
+    base: dict[str, Candidate], incoming: dict[str, Candidate]
+) -> dict[str, Candidate]:
+    """合并并行扫描结果，已完成的路由结果永不被待处理状态覆盖。"""
+    merged = dict(base)
+    for key, candidate in incoming.items():
+        current = merged.get(key)
+        if current is None or (
+            candidate.trace_status in ROUTE_CLASSES
+            and current.trace_status not in ROUTE_CLASSES
+        ):
+            merged[key] = candidate
+    return merged
+
+
 def load_candidates(path: Path, regions: set[str]) -> list[Candidate]:
     candidates: list[Candidate] = []
     seen: set[tuple[str, int]] = set()
