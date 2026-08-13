@@ -2,10 +2,10 @@
 
 - CSV 地区候选数：3045
 - 经百度前置测试数：3045
-- 可用数：1746
-- 已完成路由追踪：1514
-- 待路由追踪：244
-- CN2 路由确认数：178
+- 可用数：1747
+- 已完成路由追踪：1576
+- 待路由追踪：183
+- CN2 路由确认数：180
 
 判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。
 
@@ -65,6 +65,7 @@
 | `38.207.133.44` | 443 | HK/HKG | AS6134 | 2102 ms | Guangzhou: 59.43.248.250, 59.43.250.170; Nanjing: 59.43.139.117, 59.43.248.250; Beijing: 59.43.246.226; Xi'an: 59.43.248.250, 59.43.93.109 | [查看](https://globalping.io?measurement=20sTzpgv7jAhGiGBW00020wEi) |
 | `38.55.107.221` | 443 | HK/HKG | AS967 | 1319 ms | Guangzhou: 59.43.248.246; Beijing: 59.43.181.222, 59.43.246.226 | [查看](https://globalping.io?measurement=2omhXGdYhb172JO3800020wGC) |
 | `38.55.107.239` | 443 | HK/HKG | AS967 | 1159 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.129, 59.43.183.110; Beijing: 59.43.132.26, 59.43.248.2, 59.43.38.130 | [查看](https://globalping.io?measurement=24K1SxKAFUCCtsQU800020wFE) |
+| `38.55.107.85` | 443 | HK/HKG | AS967 | 1084 ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.139.113, 59.43.183.110 | [查看](https://globalping.io?measurement=2LZHIwgsp4Jrlj1ef00020wHi) |
 | `38.55.199.29` | 443 | HK/HKG | AS139659 | 1789 ms | Guangzhou: 59.43.22.41, 59.43.248.250; Beijing: 59.43.183.118, 59.43.248.2 | [查看](https://globalping.io?measurement=2JtYVp4XhKPBHEuhe00020wGD) |
 | `38.55.97.172` | 443 | HK/HKG | AS42960 | 2301 ms | Nanjing: 59.43.132.149; Beijing: 59.43.247.226 | [查看](https://globalping.io?measurement=2TPLZqu1XOoXSqdoX00020wFF) |
 | `38.76.181.100` | 443 | HK/HKG | AS401701 | 1340 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.117, 59.43.183.110; Beijing: 59.43.181.210, 59.43.19.94, 59.43.246.226; Xi'an: 59.43.137.241, 59.43.188.122 | [查看](https://globalping.io?measurement=2tfTm9ejYMpiEi4Ku00020wEj) |
@@ -189,3 +190,4 @@
 | `64.90.24.26` | 443 | HK/HKG | AS979 | 1385 ms | Nanjing: 59.43.132.149; Xi'an: 59.43.156.129 | [查看](https://globalping.io?measurement=27uSTgcGacpPHUc6M00020wER) |
 | `64.90.28.28` | 443 | HK/HKG | AS61112 | 2620 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.129, 59.43.183.106 | [查看](https://globalping.io?measurement=2lAE0HrZAmtwuZZNy00020wF6) |
 | `64.90.7.42` | 443 | HK/HKG | AS979 | 1120 ms | Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2OBtop16g4Ek0Eszf00020wFc) |
+| `87.83.108.38` | 443 | HK/HKG | AS49304 | 1988 ms | Guangzhou: 59.43.184.122; Beijing: 59.43.182.42, 59.43.188.234, 59.43.19.94, 59.43.249.181 | [查看](https://globalping.io?measurement=2JAX90QqeGnC2USLe00020wHi) |

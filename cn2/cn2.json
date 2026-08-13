@@ -1026,6 +1026,25 @@
     "route_evidence": "Guangzhou: 59.43.183.110; Nanjing: 59.43.139.129, 59.43.183.110; Beijing: 59.43.132.26, 59.43.248.2, 59.43.38.130"
   },
   {
+    "ip": "38.55.107.85",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 967,
+    "organization": "VMISS Inc.",
+    "source_latency_ms": 2.0,
+    "baidu_delay_ms": 1084,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.248.250; Nanjing: 59.43.139.113, 59.43.183.110",
+    "trace_url": "https://globalping.io?measurement=2LZHIwgsp4Jrlj1ef00020wHi",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:42:37Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.248.250; Nanjing: 59.43.139.113, 59.43.183.110"
+  },
+  {
     "ip": "38.55.199.29",
     "port": 443,
     "country": "HK",
@@ -3380,5 +3399,24 @@
     "traced_at": "2026-08-13T04:33:02Z",
     "route_class": "cn2_gt",
     "route_evidence": "Guangzhou: 59.43.248.250"
+  },
+  {
+    "ip": "87.83.108.38",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 49304,
+    "organization": "Sakura Link Limited",
+    "source_latency_ms": 0.0,
+    "baidu_delay_ms": 1988,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.184.122; Beijing: 59.43.182.42, 59.43.188.234, 59.43.19.94, 59.43.249.181",
+    "trace_url": "https://globalping.io?measurement=2JAX90QqeGnC2USLe00020wHi",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:42:47Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.184.122; Beijing: 59.43.182.42, 59.43.188.234, 59.43.19.94, 59.43.249.181"
   }
 ]
