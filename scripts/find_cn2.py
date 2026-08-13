@@ -364,6 +364,9 @@ def create_measurement(candidate: Candidate, token: str, proxy_url: str = "") ->
         if error.code in {402, 429}:
             return "quota"
         if error.code == 400:
+            detail = error.read().decode("utf-8", errors="replace").lower()
+            if "blacklisted address or domain" in detail:
+                return "blacklisted"
             return "unavailable"
         raise
 
@@ -498,6 +501,15 @@ def confirm_cn2(
                 candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                 save_checkpoint()
                 return "done"
+            if measurement_id == "blacklisted":
+                print(
+                    f"Globalping 拒绝追踪黑名单目标 {candidate.ip}，记录为平台不可追踪",
+                    file=sys.stderr,
+                )
+                candidate.trace_status = "blacklisted"
+                candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                save_checkpoint()
+                return "done"
             if not measurement_id:
                 print(f"未取得 {candidate.ip} 的路由任务编号，保留待重试", file=sys.stderr)
                 candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -557,6 +569,7 @@ def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args:
     confirmed = [item for item in classified if item.cn2]
     traced = classified
     pending = [item for item in alive if item.trace_status in {"pending", "unavailable"}]
+    untraceable = [item for item in alive if item.trace_status == "blacklisted"]
     headers = list(Candidate.__dataclass_fields__)
     write_progress(all_candidates, state_path)
     with (args.output_dir / "cn2.csv").open("w", encoding="utf-8", newline="") as handle:
@@ -583,6 +596,7 @@ def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args:
         f"- 可用数：{len(alive)}",
         f"- 已完成路由追踪：{len(traced)}",
         f"- 待路由追踪：{len(pending)}",
+        f"- Globalping 平台不可追踪：{len(untraceable)}",
         f"- CN2 路由确认数：{len(confirmed)}",
         "",
         "判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。",

@@ -1,8 +1,10 @@
 import csv
 import importlib.util
+import io
 import sys
 import tempfile
 import unittest
+import urllib.error
 from pathlib import Path
 
 
@@ -366,6 +368,43 @@ class FindCn2Test(unittest.TestCase):
         finally:
             MODULE.create_measurement = original
         self.assertEqual(traced_ips, ["192.0.2.2"])
+
+    def test_blacklisted_target_is_terminal(self):
+        candidate = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            baidu_delay_ms=1, tested=True,
+        )
+        original_create = MODULE.create_measurement
+        MODULE.create_measurement = lambda item, token, proxy="": "blacklisted"
+        try:
+            MODULE.confirm_cn2([candidate], trace_args())
+        finally:
+            MODULE.create_measurement = original_create
+        self.assertEqual(candidate.trace_status, "blacklisted")
+
+    def test_create_measurement_recognizes_blacklisted_target(self):
+        candidate = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+        )
+        error = urllib.error.HTTPError(
+            "https://api.globalping.io/v1/measurements",
+            400,
+            "Bad Request",
+            {},
+            io.BytesIO(b'{"message":"target is a blacklisted address or domain"}'),
+        )
+
+        class FailingOpener:
+            def open(self, request, timeout):
+                raise error
+
+        original = MODULE.proxy_opener
+        MODULE.proxy_opener = lambda proxy_url="": FailingOpener()
+        try:
+            result = MODULE.create_measurement(candidate, "")
+        finally:
+            MODULE.proxy_opener = original
+        self.assertEqual(result, "blacklisted")
 
     def test_quota_rotates_to_next_proxy(self):
         candidate = MODULE.Candidate(
