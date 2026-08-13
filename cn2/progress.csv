@@ -754,7 +754,7 @@ ip,port,country,city,datacenter,asn,organization,source_latency_ms,baidu_delay_m
 139.59.250.212,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,2111,True,False,,https://globalping.io?measurement=2RODHqdU7FGKmgxi900020wHC,other,2026-08-13T06:10:53Z,other,
 139.59.250.249,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,2382,True,False,,https://globalping.io?measurement=2w7l9S02brxjBqTY200020wHn,other,2026-08-13T06:47:59Z,other,
 143.198.207.137,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,,True,False,,,pending,,,
-143.198.207.218,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,,True,False,,,pending,,,
+143.198.207.218,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,2603,True,False,,https://globalping.io?measurement=2tePUNY5bJxu5whFt00020wIf,other,2026-08-13T07:42:01Z,other,
 143.198.211.180,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,2199,True,False,,https://globalping.io?measurement=24jojTXnQAlvOB8cl00020wHS,other,2026-08-13T06:26:17Z,other,
 143.198.216.142,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,,True,False,,,pending,,,
 143.198.216.186,443,SG,新加坡,SIN,14061,"DigitalOcean, LLC",33.0,2138,True,False,,https://globalping.io?measurement=2HUrkwfLbDAsC2tzW00020wHN,other,2026-08-13T06:21:39Z,other,
