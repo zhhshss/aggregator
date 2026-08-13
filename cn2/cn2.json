@@ -76,6 +76,25 @@
     "route_evidence": "Nanjing: 59.43.123.89, 59.43.187.182; Beijing: 59.43.19.94, 59.43.250.174; Shenzhen: 59.43.183.106"
   },
   {
+    "ip": "216.38.170.176",
+    "port": 443,
+    "country": "HK",
+    "city": "新加坡",
+    "datacenter": "SIN",
+    "asn": 137897,
+    "organization": "PAN-LIAN TECHNOLOGY CO., LIMITED",
+    "source_latency_ms": 1.0,
+    "baidu_delay_ms": 1382,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.183.106; Nanjing: 59.43.183.106, 59.43.42.33; Beijing: 59.43.182.110, 59.43.19.98",
+    "trace_url": "https://globalping.io?measurement=2RPlX1sIUt7bCPIpJ00020wGN",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:20:07Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.183.106; Nanjing: 59.43.183.106, 59.43.42.33; Beijing: 59.43.182.110, 59.43.19.98"
+  },
+  {
     "ip": "23.26.201.245",
     "port": 443,
     "country": "HK",
@@ -1670,6 +1689,25 @@
     "traced_at": "2026-08-13T05:08:48Z",
     "route_class": "cn2_gt",
     "route_evidence": "Guangzhou: 59.43.144.209"
+  },
+  {
+    "ip": "185.194.54.137",
+    "port": 443,
+    "country": "SG",
+    "city": "新加坡",
+    "datacenter": "SIN",
+    "asn": 8888,
+    "organization": "xTom Pty Ltd",
+    "source_latency_ms": 38.0,
+    "baidu_delay_ms": 1018,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Nanjing: 59.43.130.150, 59.43.139.117",
+    "trace_url": "https://globalping.io?measurement=2GbDuXhnrPm8mo4u100020wGN",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:19:44Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Nanjing: 59.43.130.150, 59.43.139.117"
   },
   {
     "ip": "43.134.62.218",

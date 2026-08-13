@@ -2,10 +2,10 @@
 
 - CSV 地区候选数：3045
 - 经百度前置测试数：3045
-- 可用数：1729
-- 已完成路由追踪：679
-- 待路由追踪：1062
-- CN2 路由确认数：137
+- 可用数：1731
+- 已完成路由追踪：731
+- 待路由追踪：1012
+- CN2 路由确认数：139
 
 判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。
 
@@ -15,6 +15,7 @@
 | `191.222.216.163` | 443 | HK/HKG | AS906 | 1090 ms | Shenzhen: 59.43.250.54 | [查看](https://globalping.io?measurement=2Zt8Z91aP5UrDYD5L00020wFc) |
 | `216.38.170.102` | 443 | HK/SIN | AS4515 | 1609 ms | Guangzhou: 59.43.248.202; Nanjing: 59.43.187.182, 59.43.42.33 | [查看](https://globalping.io?measurement=2PXGIqYnkaHwNxcIk00020wF6) |
 | `216.38.170.104` | 443 | HK/SIN | AS137897 | 1340 ms | Nanjing: 59.43.123.89, 59.43.187.182; Beijing: 59.43.19.94, 59.43.250.174; Shenzhen: 59.43.183.106 | [查看](https://globalping.io?measurement=2l87xNq6UUA16VkHZ00020wFq) |
+| `216.38.170.176` | 443 | HK/SIN | AS137897 | 1382 ms | Guangzhou: 59.43.183.106; Nanjing: 59.43.183.106, 59.43.42.33; Beijing: 59.43.182.110, 59.43.19.98 | [查看](https://globalping.io?measurement=2RPlX1sIUt7bCPIpJ00020wGN) |
 | `23.26.201.245` | 443 | HK/HKG | AS149440 | 1403 ms | Nanjing: 59.43.123.89, 59.43.22.41; Beijing: 59.43.145.62, 59.43.22.41 | [查看](https://globalping.io?measurement=2G5gN5x8LiSZOTYe500020wFk) |
 | `23.27.48.62` | 443 | HK/HKG | AS149440 | 1400 ms | Guangzhou: 59.43.16.166 | [查看](https://globalping.io?measurement=2awy0lCEMDJPIf2AP00020wGC) |
 | `38.175.192.154` | 443 | HK/HKG | AS979 | 1967 ms | Nanjing: 59.43.123.89, 59.43.22.41, 59.43.248.246; Nanjing: 59.43.139.113, 59.43.16.166, 59.43.183.110 | [查看](https://globalping.io?measurement=2paAxP5Apm2uTj5kU00020w5c) |
@@ -99,6 +100,7 @@
 | `45.194.18.109` | 443 | SG/SIN | AS137535 | 2047 ms | Nanjing: 59.43.139.129, 59.43.16.182 | [查看](https://globalping.io?measurement=2quu38VadGanRObfq00020wF6) |
 | `43.156.2.91` | 443 | SG/SIN | AS132203 | 1009 ms | Nanjing: 59.43.250.110, 59.43.42.33 | [查看](https://globalping.io?measurement=29cC9rmNlkB0N6g6H00020wFv) |
 | `45.93.28.161` | 443 | KR/ICN | AS138195 | 1427 ms | Guangzhou: 59.43.144.209 | [查看](https://globalping.io?measurement=2SGf3WjxnplBH7KBs00020wGC) |
+| `185.194.54.137` | 443 | SG/SIN | AS8888 | 1018 ms | Nanjing: 59.43.130.150, 59.43.139.117 | [查看](https://globalping.io?measurement=2GbDuXhnrPm8mo4u100020wGN) |
 | `43.134.62.218` | 443 | SG/SIN | AS132203 | 1417 ms | Guangzhou: 59.43.250.54; Nanjing: 59.43.139.113, 59.43.250.170 | [查看](https://globalping.io?measurement=27GTcva5MLW0BhBPg00020wGJ) |
 | `43.156.142.191` | 443 | SG/SIN | AS132203 | 1550 ms | Nanjing: 59.43.139.113 | [查看](https://globalping.io?measurement=20h2UogvgwUaboyCo00020wEO) |
 | `43.160.197.205` | 443 | SG/SIN | AS132203 | 2446 ms | Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=2KT94gubBZQWEKhyF00020wEo) |
