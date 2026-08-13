@@ -2,10 +2,10 @@
 
 - CSV 地区候选数：3045
 - 经百度前置测试数：3045
-- 可用数：1741
-- 已完成路由追踪：1127
-- 待路由追踪：626
-- CN2 路由确认数：170
+- 可用数：1742
+- 已完成路由追踪：1180
+- 待路由追踪：574
+- CN2 路由确认数：171
 
 判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。
 
@@ -173,6 +173,7 @@
 | `156.224.28.67` | 443 | HK/SEA | AS154321 | 1481 ms | Guangzhou: 59.43.248.246; Beijing: 59.43.132.34, 59.43.248.2 | [查看](https://globalping.io?measurement=2JOmE2bGdu49clJ1700020wGC) |
 | `108.165.255.81` | 443 | HK/HKG | AS149440 | 1235 ms | Beijing: 59.43.142.234 | [查看](https://globalping.io?measurement=2w7qaciXhF03WhXk300020wGC) |
 | `154.64.246.151` | 443 | HK/HKG | AS979 | 2736 ms | Nanjing: 59.43.139.109, 59.43.188.122; Shenzhen: 59.43.188.122 | [查看](https://globalping.io?measurement=2yzg8AxKvZs4cbX1L00020wEI) |
+| `166.88.11.97` | 443 | HK/HKG | AS149440 | 1319 ms | Beijing: 59.43.130.126; Guangzhou: 59.43.16.182 | [查看](https://globalping.io?measurement=27O0u95rJtrEJzfb400020wH5) |
 | `166.88.61.166` | 443 | HK/HKG | AS149440 | 1718 ms | Beijing: 59.43.130.106, 59.43.145.62; Beijing: 59.43.145.62 | [查看](https://globalping.io?measurement=2lkywqLOzarKNrRZl00020wGD) |
 | `166.88.61.58` | 443 | HK/HKG | AS149440 | 1079 ms | Guangzhou: 59.43.22.41; Nanjing: 59.43.139.129; Beijing: 59.43.130.154 | [查看](https://globalping.io?measurement=2tZefZ2dzi1RIoYCy00020wGe) |
 | `166.88.77.118` | 443 | HK/HKG | AS149440 | 1267 ms | Nanjing: 59.43.139.113; Beijing: 59.43.137.222 | [查看](https://globalping.io?measurement=2yQMKZt1DEQsK1oT200020wFq) |

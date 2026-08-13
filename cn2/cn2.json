@@ -3078,6 +3078,25 @@
     "route_evidence": "Nanjing: 59.43.139.109, 59.43.188.122; Shenzhen: 59.43.188.122"
   },
   {
+    "ip": "166.88.11.97",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 149440,
+    "organization": "Evoxt Sdn. Bhd.",
+    "source_latency_ms": 0.0,
+    "baidu_delay_ms": 1319,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Beijing: 59.43.130.126; Guangzhou: 59.43.16.182",
+    "trace_url": "https://globalping.io?measurement=27O0u95rJtrEJzfb400020wH5",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:04:00Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Beijing: 59.43.130.126; Guangzhou: 59.43.16.182"
+  },
+  {
     "ip": "166.88.61.166",
     "port": 443,
     "country": "HK",
