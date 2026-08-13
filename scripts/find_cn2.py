@@ -17,9 +17,8 @@ import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
-from itertools import cycle
 from pathlib import Path
-from threading import Lock
+from threading import Event, Lock
 from typing import Callable
 
 CN2_ASNS = {4809, 23764}
@@ -405,13 +404,9 @@ def confirm_cn2(
     if args.max_traces > 0:
         trace_targets = trace_targets[: args.max_traces]
     trace_concurrency = max(1, min(getattr(args, "trace_concurrency", 1), len(trace_targets) or 1))
-    proxy_cycle = cycle(proxy_pool or [""])
-    proxy_lock = Lock()
+    proxy_locks = [Lock() for _ in proxy_pool]
     checkpoint_lock = Lock()
-
-    def next_proxy() -> str:
-        with proxy_lock:
-            return next(proxy_cycle)
+    quota_exhausted = Event()
 
     def save_checkpoint() -> None:
         if checkpoint:
@@ -419,22 +414,34 @@ def confirm_cn2(
                 checkpoint()
 
     def trace_one(index: int, candidate: Candidate) -> str:
+        if quota_exhausted.is_set():
+            return "quota"
         try:
             measurement_id = "quota"
             measurement_proxy = ""
             attempts = len(proxy_pool) + (1 if args.globalping_token or not proxy_pool else 0)
-            assigned_proxy = next_proxy() if proxy_pool else ""
+            assigned_index = (index - 1) % len(proxy_pool) if proxy_pool else -1
             for attempt in range(max(1, attempts)):
                 if args.globalping_token and attempt == 0:
                     measurement_proxy = ""
-                elif attempt == (1 if args.globalping_token else 0):
-                    measurement_proxy = assigned_proxy
+                    proxy_index = -1
+                elif not proxy_pool:
+                    measurement_proxy = ""
+                    proxy_index = -1
                 else:
-                    measurement_proxy = next_proxy()
+                    proxy_offset = attempt - (1 if args.globalping_token else 0)
+                    proxy_index = (assigned_index + proxy_offset) % len(proxy_pool)
+                    measurement_proxy = proxy_pool[proxy_index]
                 try:
-                    measurement_id = create_measurement(
-                        candidate, args.globalping_token, measurement_proxy
-                    )
+                    if proxy_index >= 0:
+                        with proxy_locks[proxy_index]:
+                            measurement_id = create_measurement(
+                                candidate, args.globalping_token, measurement_proxy
+                            )
+                    else:
+                        measurement_id = create_measurement(
+                            candidate, args.globalping_token, measurement_proxy
+                        )
                 except (OSError, urllib.error.URLError, json.JSONDecodeError):
                     if not proxy_pool:
                         raise
@@ -442,6 +449,7 @@ def confirm_cn2(
                 if measurement_id != "quota":
                     break
             if measurement_id == "quota":
+                quota_exhausted.set()
                 return "quota"
             if measurement_id == "unavailable":
                 print(f"没有适合 {candidate.ip} 的路由探针，留待后续重试", file=sys.stderr)
