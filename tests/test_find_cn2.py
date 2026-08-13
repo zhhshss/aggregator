@@ -405,6 +405,43 @@ class FindCn2Test(unittest.TestCase):
             ["pending", "other", "other"],
         )
 
+    def test_quota_proxy_is_not_retried_for_every_candidate(self):
+        candidates = [
+            MODULE.Candidate(
+                f"192.0.2.{index}", 443, "JP", "", "NRT", 0, "", index,
+                baidu_delay_ms=index, tested=True,
+            )
+            for index in range(1, 4)
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            proxy_path = Path(directory) / "proxies.txt"
+            proxy_path.write_text(
+                "http://user:pass@192.0.2.10:3129\n"
+                "http://user:pass@192.0.2.11:3129\n",
+                encoding="utf-8",
+            )
+            args = trace_args(max_traces=0, proxy_file=proxy_path, trace_concurrency=1)
+            attempts = []
+            original_create = MODULE.create_measurement
+            original_wait = MODULE.wait_measurement
+            MODULE.create_measurement = lambda item, token, proxy="": (
+                attempts.append(proxy)
+                or ("quota" if proxy.endswith("10:3129") else item.ip)
+            )
+            MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
+                "status": "finished", "results": []
+            }
+            try:
+                MODULE.confirm_cn2(candidates, args)
+            finally:
+                MODULE.create_measurement = original_create
+                MODULE.wait_measurement = original_wait
+        self.assertEqual(
+            attempts.count("http://user:pass@192.0.2.10:3129"),
+            1,
+        )
+        self.assertTrue(all(item.trace_status == "other" for item in candidates))
+
 
 if __name__ == "__main__":
     unittest.main()

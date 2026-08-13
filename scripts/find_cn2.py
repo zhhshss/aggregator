@@ -405,7 +405,9 @@ def confirm_cn2(
         trace_targets = trace_targets[: args.max_traces]
     trace_concurrency = max(1, min(getattr(args, "trace_concurrency", 1), len(trace_targets) or 1))
     proxy_locks = [Lock() for _ in proxy_pool]
+    proxy_quota = [False for _ in proxy_pool]
     checkpoint_lock = Lock()
+    proxy_quota_lock = Lock()
 
     def save_checkpoint() -> None:
         if checkpoint:
@@ -431,10 +433,19 @@ def confirm_cn2(
                     measurement_proxy = proxy_pool[proxy_index]
                 try:
                     if proxy_index >= 0:
+                        with proxy_quota_lock:
+                            if proxy_quota[proxy_index]:
+                                continue
                         with proxy_locks[proxy_index]:
+                            with proxy_quota_lock:
+                                if proxy_quota[proxy_index]:
+                                    continue
                             measurement_id = create_measurement(
                                 candidate, args.globalping_token, measurement_proxy
                             )
+                            if measurement_id == "quota":
+                                with proxy_quota_lock:
+                                    proxy_quota[proxy_index] = True
                     else:
                         measurement_id = create_measurement(
                             candidate, args.globalping_token, measurement_proxy
