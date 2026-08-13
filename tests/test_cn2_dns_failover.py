@@ -51,6 +51,36 @@ class Cn2DnsFailoverTest(unittest.TestCase):
         self.assertEqual(tested, ["192.0.2.2"])
         self.assertEqual(selected.ip, "192.0.2.2")
 
+    def test_preferred_hostname_upgrades_to_gia(self):
+        candidates = [
+            MODULE.Candidate("192.0.2.1", "JP", 1, "cn2_gia"),
+            MODULE.Candidate("192.0.2.2", "JP", 2, "cn2_gt"),
+        ]
+        tested = []
+        original = MODULE.test_ip
+        MODULE.test_ip = lambda ip, timeout: (tested.append(ip) or (True, 1))
+        try:
+            selected, _, _ = MODULE.choose_preferred_ip(candidates, "192.0.2.2", 1)
+        finally:
+            MODULE.test_ip = original
+        self.assertEqual(tested, ["192.0.2.1"])
+        self.assertEqual(selected.route_class, "cn2_gia")
+
+    def test_preferred_hostname_keeps_current_within_best_tier(self):
+        candidates = [
+            MODULE.Candidate("192.0.2.1", "JP", 1, "cn2_gia"),
+            MODULE.Candidate("192.0.2.2", "JP", 2, "cn2_gia"),
+        ]
+        tested = []
+        original = MODULE.test_ip
+        MODULE.test_ip = lambda ip, timeout: (tested.append(ip) or (True, 1))
+        try:
+            selected, _, _ = MODULE.choose_preferred_ip(candidates, "192.0.2.2", 1)
+        finally:
+            MODULE.test_ip = original
+        self.assertEqual(tested, ["192.0.2.2"])
+        self.assertEqual(selected.ip, "192.0.2.2")
+
     def test_managed_record_pattern(self):
         cloudflare = object.__new__(MODULE.Cloudflare)
         cloudflare.request = lambda method, path: {

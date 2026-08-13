@@ -141,6 +141,21 @@ def choose_ip(candidates: list[Candidate], current_ip: str | None, timeout: int)
     return None, None, attempts
 
 
+def choose_preferred_ip(
+    candidates: list[Candidate], current_ip: str | None, timeout: int
+) -> tuple[Candidate | None, int | None, list[dict]]:
+    """综合域名先保证最高可用档位；同档位内保持当前 IP。"""
+    attempts: list[dict] = []
+    for route_class in ROUTE_PRIORITY:
+        tier = [item for item in candidates if item.route_class == route_class]
+        tier_current_ip = current_ip if any(item.ip == current_ip for item in tier) else None
+        chosen, delay, tier_attempts = choose_ip(tier, tier_current_ip, timeout)
+        attempts.extend(tier_attempts)
+        if chosen:
+            return chosen, delay, attempts
+    return None, None, attempts
+
+
 class Cloudflare:
     def __init__(self, args: argparse.Namespace) -> None:
         if args.cf_api_token:
@@ -247,7 +262,7 @@ def main() -> int:
         candidates = grouped.get(country, [])
         if current_ip and all(item.ip != current_ip for item in candidates):
             candidates = [Candidate(current_ip, country, 10**9, "current"), *candidates]
-        chosen, delay, attempts = choose_ip(candidates, current_ip, args.timeout)
+        chosen, delay, attempts = choose_preferred_ip(candidates, current_ip, args.timeout)
         if chosen is None:
             failures += 1
             action = "kept-current" if current_ip else "no-record"
