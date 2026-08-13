@@ -31,6 +31,7 @@ jobs:
     timeout-minutes: 90
     env:
       GLOBALPING_TOKEN: ${{ secrets.GLOBALPING_TOKEN }}
+      GLOBALPING_PROXY_POOL: ${{ secrets.GLOBALPING_PROXY_POOL }}
 
     steps:
       - name: Checkout
@@ -43,6 +44,17 @@ jobs:
 
       - name: Check input CSV
         run: test -s "Global-proxyip-443.csv"
+
+      - name: Prepare Globalping proxy pool
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          if [ -n "$GLOBALPING_PROXY_POOL" ]; then
+            printf '%s\n' "$GLOBALPING_PROXY_POOL" > "$RUNNER_TEMP/globalping-proxies.txt"
+          else
+            : > "$RUNNER_TEMP/globalping-proxies.txt"
+          fi
 
       - name: Find CN2 proxies
         id: scan
@@ -57,7 +69,8 @@ jobs:
             --output-dir cn2 \
             --regions "$REGIONS" \
             --max-candidates "$MAX_CANDIDATES" \
-            --max-traces "$MAX_TRACES"
+            --max-traces "$MAX_TRACES" \
+            --globalping-proxy-file "$RUNNER_TEMP/globalping-proxies.txt"
 
       - name: Save emergency progress artifact
         if: ${{ always() }}

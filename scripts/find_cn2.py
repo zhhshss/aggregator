@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
@@ -72,6 +73,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout-ms", type=int, default=8000)
     parser.add_argument("--concurrency", type=int, default=100)
     parser.add_argument("--globalping-token", default=os.getenv("GLOBALPING_TOKEN", ""))
+    parser.add_argument(
+        "--globalping-proxy-file",
+        type=Path,
+        default=Path(os.getenv("GLOBALPING_PROXY_FILE", "")) if os.getenv("GLOBALPING_PROXY_FILE") else None,
+        help="Globalping API HTTP 代理池文件，每行一个代理 URL",
+    )
     parser.add_argument("--github-run-id", default=os.getenv("GITHUB_RUN_ID", ""))
     return parser.parse_args()
 
@@ -188,10 +195,43 @@ def load_candidates(path: Path, regions: set[str]) -> list[Candidate]:
     return candidates
 
 
-def api_request(url: str, timeout: float, headers: dict[str, str] | None = None) -> dict:
+def proxy_opener(proxy_url: str = "") -> urllib.request.OpenerDirector:
+    if not proxy_url:
+        return urllib.request.build_opener()
+    handlers = [urllib.request.ProxyHandler({"http": proxy_url, "https": proxy_url})]
+    return urllib.request.build_opener(*handlers)
+
+
+def api_request(
+    url: str,
+    timeout: float,
+    headers: dict[str, str] | None = None,
+    proxy_url: str = "",
+) -> dict:
     request = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+    with proxy_opener(proxy_url).open(request, timeout=timeout) as response:
         return json.load(response)
+
+
+def load_proxy_pool(path: Path | None) -> list[str]:
+    if path is None or not path.is_file():
+        return []
+    proxies: list[str] = []
+    seen: set[str] = set()
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        value = line.strip()
+        if not value or value.startswith("#"):
+            continue
+        if "://" not in value:
+            value = f"http://{value}"
+        parsed = urllib.parse.urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname or not parsed.port:
+            continue
+        normalized = urllib.parse.urlunsplit(parsed)
+        if normalized not in seen:
+            seen.add(normalized)
+            proxies.append(normalized)
+    return proxies
 
 
 def test_candidate(candidate: Candidate, timeout_ms: int) -> int | None:
@@ -265,7 +305,7 @@ def globalping_headers(token: str) -> dict[str, str]:
     return headers
 
 
-def create_measurement(candidate: Candidate, token: str) -> str:
+def create_measurement(candidate: Candidate, token: str, proxy_url: str = "") -> str:
     payload = json.dumps(
         {
             "type": "traceroute",
@@ -282,7 +322,7 @@ def create_measurement(candidate: Candidate, token: str) -> str:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:
+        with proxy_opener(proxy_url).open(request, timeout=20) as response:
             return str(json.load(response).get("id", ""))
     except urllib.error.HTTPError as error:
         if error.code in {402, 429}:
@@ -292,13 +332,13 @@ def create_measurement(candidate: Candidate, token: str) -> str:
         raise
 
 
-def wait_measurement(measurement_id: str, token: str) -> dict:
+def wait_measurement(measurement_id: str, token: str, proxy_url: str = "") -> dict:
     endpoint = f"https://api.globalping.io/v1/measurements/{measurement_id}"
     deadline = time.monotonic() + 45
     last: dict = {}
     while time.monotonic() < deadline:
         try:
-            last = api_request(endpoint, 20, globalping_headers(token))
+            last = api_request(endpoint, 20, globalping_headers(token), proxy_url)
         except (OSError, urllib.error.URLError, json.JSONDecodeError):
             time.sleep(2)
             continue
@@ -344,6 +384,8 @@ def confirm_cn2(
     args: argparse.Namespace,
     checkpoint: Callable[[], None] | None = None,
 ) -> None:
+    proxy_pool = load_proxy_pool(getattr(args, "globalping_proxy_file", None))
+    proxy_index = 0
     trace_targets = sorted(
         (
             candidate
@@ -362,9 +404,36 @@ def confirm_cn2(
         trace_targets = trace_targets[: args.max_traces]
     for index, candidate in enumerate(trace_targets, 1):
         try:
-            measurement_id = create_measurement(candidate, args.globalping_token)
+            measurement_id = "quota"
+            measurement_proxy = ""
+            proxy_attempts: list[str] = []
+            if args.globalping_token or not proxy_pool:
+                proxy_attempts.append("")
+            proxy_attempts.extend(proxy_pool)
+            if not proxy_attempts:
+                proxy_attempts.append("")
+            for attempt in range(len(proxy_attempts)):
+                if proxy_pool and proxy_attempts[0] == "":
+                    measurement_proxy = "" if attempt == 0 else proxy_pool[proxy_index % len(proxy_pool)]
+                    if attempt > 0:
+                        proxy_index += 1
+                elif proxy_pool:
+                    measurement_proxy = proxy_pool[proxy_index % len(proxy_pool)]
+                    proxy_index += 1
+                else:
+                    measurement_proxy = ""
+                try:
+                    measurement_id = create_measurement(
+                        candidate, args.globalping_token, measurement_proxy
+                    )
+                except (OSError, urllib.error.URLError, json.JSONDecodeError):
+                    if not proxy_pool:
+                        raise
+                    continue
+                if measurement_id != "quota":
+                    break
             if measurement_id == "quota":
-                print("Globalping 配额不足，停止新增路由追踪", file=sys.stderr)
+                print("Globalping 代理池配额不足，停止新增路由追踪", file=sys.stderr)
                 break
             if measurement_id == "unavailable":
                 print(f"没有适合 {candidate.ip} 的路由探针，留待后续重试", file=sys.stderr)
@@ -380,7 +449,9 @@ def confirm_cn2(
                     checkpoint()
                 continue
             candidate.trace_url = f"https://globalping.io?measurement={measurement_id}"
-            measurement = wait_measurement(measurement_id, args.globalping_token)
+            measurement = wait_measurement(
+                measurement_id, args.globalping_token, measurement_proxy
+            )
             candidate.traced_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             if measurement.get("status") != "finished":
                 print(f"路由追踪未完成 {candidate.ip}，保留待重试", file=sys.stderr)

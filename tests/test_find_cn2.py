@@ -86,6 +86,21 @@ class FindCn2Test(unittest.TestCase):
             MODULE.test_candidate = original
         self.assertEqual(len(result), 3)
 
+    def test_load_proxy_pool_normalizes_and_deduplicates(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "proxies.txt"
+            path.write_text(
+                "user:pass@192.0.2.1:3129\n"
+                "http://user:pass@192.0.2.1:3129\n"
+                "bad-value\n",
+                encoding="utf-8",
+            )
+            proxies = MODULE.load_proxy_pool(path)
+        self.assertEqual(
+            proxies,
+            ["http://user:pass@192.0.2.1:3129"],
+        )
+
     def test_baidu_validation_refreshes_restored_candidate(self):
         candidate = MODULE.Candidate(
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
@@ -153,9 +168,12 @@ class FindCn2Test(unittest.TestCase):
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
             baidu_delay_ms=1, tested=True, trace_status="not_cn2",
         )
-        args = type("Args", (), {"max_traces": 0, "globalping_token": ""})()
+        args = type(
+            "Args", (),
+            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
+        )()
         original = MODULE.create_measurement
-        MODULE.create_measurement = lambda candidate, token: self.fail("不应重复追踪已完成候选")
+        MODULE.create_measurement = lambda candidate, token, proxy="": self.fail("不应重复追踪已完成候选")
         try:
             MODULE.confirm_cn2([completed], args)
         finally:
@@ -172,12 +190,15 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type("Args", (), {"max_traces": 0, "globalping_token": ""})()
+        args = type(
+            "Args", (),
+            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
+        )()
         checkpoints = []
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
-        MODULE.create_measurement = lambda candidate, token: candidate.ip
-        MODULE.wait_measurement = lambda measurement_id, token: {
+        MODULE.create_measurement = lambda candidate, token, proxy="": candidate.ip
+        MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
             "status": "finished", "results": []
         }
         try:
@@ -197,11 +218,14 @@ class FindCn2Test(unittest.TestCase):
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
             baidu_delay_ms=1, tested=True,
         )
-        args = type("Args", (), {"max_traces": 0, "globalping_token": ""})()
+        args = type(
+            "Args", (),
+            {"max_traces": 0, "globalping_token": "", "globalping_proxy_file": None},
+        )()
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
-        MODULE.create_measurement = lambda item, token: "measurement-id"
-        MODULE.wait_measurement = lambda measurement_id, token: {"status": "in-progress"}
+        MODULE.create_measurement = lambda item, token, proxy="": "measurement-id"
+        MODULE.wait_measurement = lambda measurement_id, token, proxy="": {"status": "in-progress"}
         try:
             MODULE.confirm_cn2([candidate], args)
         finally:
@@ -221,12 +245,15 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type("Args", (), {"max_traces": 1, "globalping_token": ""})()
+        args = type(
+            "Args", (),
+            {"max_traces": 1, "globalping_token": "", "globalping_proxy_file": None},
+        )()
         traced_ips = []
         original_create = MODULE.create_measurement
         original_wait = MODULE.wait_measurement
-        MODULE.create_measurement = lambda item, token: traced_ips.append(item.ip) or item.ip
-        MODULE.wait_measurement = lambda measurement_id, token: {
+        MODULE.create_measurement = lambda item, token, proxy="": traced_ips.append(item.ip) or item.ip
+        MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
             "status": "finished", "results": []
         }
         try:
@@ -266,15 +293,61 @@ class FindCn2Test(unittest.TestCase):
                 baidu_delay_ms=2, tested=True,
             ),
         ]
-        args = type("Args", (), {"max_traces": 1, "globalping_token": ""})()
+        args = type(
+            "Args", (),
+            {"max_traces": 1, "globalping_token": "", "globalping_proxy_file": None},
+        )()
         traced_ips = []
         original = MODULE.create_measurement
-        MODULE.create_measurement = lambda item, token: traced_ips.append(item.ip) or "quota"
+        MODULE.create_measurement = lambda item, token, proxy="": traced_ips.append(item.ip) or "quota"
         try:
             MODULE.confirm_cn2(candidates, args)
         finally:
             MODULE.create_measurement = original
         self.assertEqual(traced_ips, ["192.0.2.2"])
+
+    def test_quota_rotates_to_next_proxy(self):
+        candidate = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            baidu_delay_ms=1, tested=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            proxy_path = Path(directory) / "proxies.txt"
+            proxy_path.write_text(
+                "http://user:pass@192.0.2.10:3129\n"
+                "http://user:pass@192.0.2.11:3129\n",
+                encoding="utf-8",
+            )
+            args = type(
+                "Args", (),
+                {
+                    "max_traces": 1,
+                    "globalping_token": "",
+                    "globalping_proxy_file": proxy_path,
+                },
+            )()
+            attempted = []
+            original_create = MODULE.create_measurement
+            original_wait = MODULE.wait_measurement
+            MODULE.create_measurement = lambda item, token, proxy="": (
+                attempted.append(proxy) or ("quota" if proxy.endswith("10:3129") else "id")
+            )
+            MODULE.wait_measurement = lambda measurement_id, token, proxy="": {
+                "status": "finished", "results": []
+            }
+            try:
+                MODULE.confirm_cn2([candidate], args)
+            finally:
+                MODULE.create_measurement = original_create
+                MODULE.wait_measurement = original_wait
+        self.assertEqual(
+            attempted,
+            [
+                "http://user:pass@192.0.2.10:3129",
+                "http://user:pass@192.0.2.11:3129",
+            ],
+        )
+        self.assertEqual(candidate.trace_status, "other")
 
 
 if __name__ == "__main__":
