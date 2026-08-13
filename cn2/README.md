@@ -2,10 +2,10 @@
 
 - CSV 地区候选数：3045
 - 经百度前置测试数：3045
-- 可用数：1728
-- 已完成路由追踪：617
-- 待路由追踪：1123
-- CN2 路由确认数：136
+- 可用数：1729
+- 已完成路由追踪：679
+- 待路由追踪：1062
+- CN2 路由确认数：137
 
 判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。
 
@@ -99,6 +99,7 @@
 | `45.194.18.109` | 443 | SG/SIN | AS137535 | 2047 ms | Nanjing: 59.43.139.129, 59.43.16.182 | [查看](https://globalping.io?measurement=2quu38VadGanRObfq00020wF6) |
 | `43.156.2.91` | 443 | SG/SIN | AS132203 | 1009 ms | Nanjing: 59.43.250.110, 59.43.42.33 | [查看](https://globalping.io?measurement=29cC9rmNlkB0N6g6H00020wFv) |
 | `45.93.28.161` | 443 | KR/ICN | AS138195 | 1427 ms | Guangzhou: 59.43.144.209 | [查看](https://globalping.io?measurement=2SGf3WjxnplBH7KBs00020wGC) |
+| `43.134.62.218` | 443 | SG/SIN | AS132203 | 1417 ms | Guangzhou: 59.43.250.54; Nanjing: 59.43.139.113, 59.43.250.170 | [查看](https://globalping.io?measurement=27GTcva5MLW0BhBPg00020wGJ) |
 | `43.156.142.191` | 443 | SG/SIN | AS132203 | 1550 ms | Nanjing: 59.43.139.113 | [查看](https://globalping.io?measurement=20h2UogvgwUaboyCo00020wEO) |
 | `43.160.197.205` | 443 | SG/SIN | AS132203 | 2446 ms | Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=2KT94gubBZQWEKhyF00020wEo) |
 | `43.160.253.225` | 443 | SG/SIN | AS132203 | 1175 ms | Nanjing: 59.43.139.117 | [查看](https://globalping.io?measurement=2d5yRvREhWyGxkFzQ00020wEM) |
