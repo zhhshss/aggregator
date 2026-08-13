@@ -1,0 +1,64 @@
+name: Speedtest custom proxies
+
+on:
+  workflow_dispatch:
+    inputs:
+      bytes:
+        description: "每个 IP 下载字节数"
+        required: false
+        default: "2097152"
+      concurrency:
+        description: "并发测速数"
+        required: false
+        default: "10"
+
+permissions:
+  contents: write
+
+jobs:
+  speedtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Speedtest custom proxies
+        env:
+          TEST_BYTES: ${{ github.event.inputs.bytes || '2097152' }}
+          TEST_CONCURRENCY: ${{ github.event.inputs.concurrency || '10' }}
+        run: |
+          python -u "scripts/speedtest_custom_csv.py" \
+            --input "custom-speedtest-input.csv" \
+            --output-dir "proxy-speedtest/custom" \
+            --bytes "$TEST_BYTES" \
+            --timeout "45" \
+            --concurrency "$TEST_CONCURRENCY"
+
+      - name: Upload speedtest report
+        uses: actions/upload-artifact@v4
+        with:
+          name: custom-speedtest-${{ github.run_id }}
+          path: proxy-speedtest/custom/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Publish speedtest report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "proxy-speedtest/custom/"
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "chore: update custom proxy speedtest"
+          git pull --rebase origin main
+          git push origin HEAD:main
