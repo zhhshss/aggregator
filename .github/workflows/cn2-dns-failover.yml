@@ -33,14 +33,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s "cn2/cn2.csv"
+          test -s "cn2/progress.csv"
           test -n "$CF_API_KEY"
           test -n "$CF_API_EMAIL"
 
       - name: Test and update DNS
         run: |
           python -u scripts/cn2_dns_failover.py \
-            --input "cn2/cn2.csv" \
+            --input "cn2/progress.csv" \
             --zone "ciallo0d000721.cc.cd" \
             --prefix "cn2" \
             --report "cn2-dns/status.json"

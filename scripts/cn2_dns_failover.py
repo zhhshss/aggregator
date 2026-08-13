@@ -28,6 +28,7 @@ BAIDU_HEADERS = (
 )
 TEST_HOST = "cp.cloudflare.com"
 TEST_URL = f"https://{TEST_HOST}/"
+ROUTE_PRIORITY = ("cn2_gia", "cn2_gt", "telecom_163_direct")
 
 
 @dataclass(frozen=True)
@@ -35,6 +36,12 @@ class Candidate:
     ip: str
     country: str
     delay_ms: int
+    route_class: str
+
+
+def hostname(route_class: str, country: str, zone: str) -> str:
+    prefix = route_class.replace("_", "-")
+    return f"{prefix}-{country.lower()}.{zone}"
 
 
 def parse_args() -> argparse.Namespace:
@@ -60,14 +67,17 @@ def load_candidates(path: Path) -> dict[str, list[Candidate]]:
                 ip = str(ipaddress.ip_address(row["ip"].strip()))
                 country = row["country"].strip().upper()
                 delay = int(row.get("baidu_delay_ms") or 10**9)
+                route_class = row.get("route_class", "")
             except (KeyError, ValueError):
                 continue
-            if not country or (country, ip) in seen:
+            if route_class not in ROUTE_PRIORITY or not country or (country, ip) in seen:
                 continue
             seen.add((country, ip))
-            grouped.setdefault(country, []).append(Candidate(ip, country, delay))
+            grouped.setdefault(country, []).append(Candidate(ip, country, delay, route_class))
     for candidates in grouped.values():
-        candidates.sort(key=lambda item: (item.delay_ms, item.ip))
+        candidates.sort(
+            key=lambda item: (ROUTE_PRIORITY.index(item.route_class), item.delay_ms, item.ip)
+        )
     return grouped
 
 
@@ -118,7 +128,14 @@ def choose_ip(candidates: list[Candidate], current_ip: str | None, timeout: int)
     attempts: list[dict] = []
     for candidate in ordered:
         alive, delay = test_ip(candidate.ip, timeout)
-        attempts.append({"ip": candidate.ip, "alive": alive, "delay_ms": delay})
+        attempts.append(
+            {
+                "ip": candidate.ip,
+                "route_class": candidate.route_class,
+                "alive": alive,
+                "delay_ms": delay,
+            }
+        )
         if alive:
             return candidate, delay, attempts
     return None, None, attempts
@@ -183,6 +200,24 @@ class Cloudflare:
                 records[match.group(1).upper()] = record
         return records
 
+    def route_records(self, zone_id: str, zone: str) -> dict[tuple[str, str], dict]:
+        result = self.request("GET", f"/zones/{zone_id}/dns_records?type=A&per_page=500")
+        patterns = {
+            route_class: re.compile(
+                rf"^{re.escape(route_class.replace('_', '-'))}-([a-z]{{2}})\.{re.escape(zone)}$",
+                re.IGNORECASE,
+            )
+            for route_class in ROUTE_PRIORITY
+        }
+        records: dict[tuple[str, str], dict] = {}
+        for record in result.get("result", []):
+            for route_class, pattern in patterns.items():
+                match = pattern.match(record.get("name", ""))
+                if match:
+                    records[(route_class, match.group(1).upper())] = record
+                    break
+        return records
+
     def upsert_a(self, zone_id: str, name: str, ip: str, record: dict | None) -> str:
         payload = {"type": "A", "name": name, "content": ip, "ttl": 60, "proxied": False}
         if record:
@@ -202,6 +237,7 @@ def main() -> int:
     cloudflare = None if args.dry_run else Cloudflare(args)
     zone_id = "" if args.dry_run else cloudflare.zone_id(args.zone)
     managed = {} if args.dry_run else cloudflare.managed_records(zone_id, args.prefix, args.zone)
+    route_records = {} if args.dry_run else cloudflare.route_records(zone_id, args.zone)
     results: list[dict] = []
     failures = 0
     for country in sorted(set(grouped) | set(managed)):
@@ -210,7 +246,7 @@ def main() -> int:
         current_ip = record.get("content") if record else None
         candidates = grouped.get(country, [])
         if current_ip and all(item.ip != current_ip for item in candidates):
-            candidates = [Candidate(current_ip, country, 10**9), *candidates]
+            candidates = [Candidate(current_ip, country, 10**9, "current"), *candidates]
         chosen, delay, attempts = choose_ip(candidates, current_ip, args.timeout)
         if chosen is None:
             failures += 1
@@ -223,6 +259,43 @@ def main() -> int:
             action = cloudflare.upsert_a(zone_id, name, chosen.ip, record)
             selected_ip = chosen.ip
         print(f"{country}: {name} -> {selected_ip or '-'} ({action})")
+        tier_updates: dict[str, dict] = {}
+        for route_class in ROUTE_PRIORITY:
+            tier_candidates = [item for item in candidates if item.route_class == route_class]
+            tier_record = route_records.get((route_class, country))
+            tier_current_ip = tier_record.get("content") if tier_record else None
+            if tier_current_ip and all(item.ip != tier_current_ip for item in tier_candidates):
+                tier_candidates = [
+                    Candidate(tier_current_ip, country, 10**9, route_class),
+                    *tier_candidates,
+                ]
+            tier_chosen, tier_delay, tier_attempts = choose_ip(
+                tier_candidates, tier_current_ip, args.timeout
+            )
+            tier_name = hostname(route_class, country, args.zone)
+            if tier_chosen is None:
+                tier_action = "kept-current" if tier_current_ip else "no-record"
+                tier_selected_ip = tier_current_ip
+            elif args.dry_run:
+                tier_action = "dry-run"
+                tier_selected_ip = tier_chosen.ip
+            else:
+                tier_action = cloudflare.upsert_a(
+                    zone_id, tier_name, tier_chosen.ip, tier_record
+                )
+                tier_selected_ip = tier_chosen.ip
+            print(
+                f"{country}/{route_class}: {tier_name} -> "
+                f"{tier_selected_ip or '-'} ({tier_action})"
+            )
+            tier_updates[route_class] = {
+                "hostname": tier_name,
+                "previous_ip": tier_current_ip,
+                "selected_ip": tier_selected_ip,
+                "delay_ms": tier_delay,
+                "action": tier_action,
+                "attempts": tier_attempts,
+            }
         results.append(
             {
                 "country": country,
@@ -230,8 +303,10 @@ def main() -> int:
                 "previous_ip": current_ip,
                 "selected_ip": selected_ip,
                 "delay_ms": delay,
+                "route_class": chosen.route_class if chosen else None,
                 "action": action,
                 "attempts": attempts,
+                "tiers": tier_updates,
             }
         )
     args.report.parent.mkdir(parents=True, exist_ok=True)

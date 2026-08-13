@@ -48,6 +48,29 @@ class FindCn2Test(unittest.TestCase):
         MODULE.evaluate_trace(candidate, measurement)
         self.assertTrue(candidate.cn2)
         self.assertIn("59.43.132.149", candidate.cn2_evidence)
+        self.assertEqual(candidate.route_class, "cn2_gia")
+
+    def test_evaluate_trace_classifies_cn2_gt_and_163_direct(self):
+        cn2_gt = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 13335, "", 1
+        )
+        MODULE.evaluate_trace(
+            cn2_gt,
+            {
+                "results": [
+                    {
+                        "probe": {"city": "Nanjing"},
+                        "result": {"rawOutput": "7 59.43.132.149 13 ms"},
+                    }
+                ]
+            },
+        )
+        telecom = MODULE.Candidate(
+            "192.0.2.2", 443, "JP", "", "NRT", 4134, "", 1
+        )
+        MODULE.evaluate_trace(telecom, {"results": []})
+        self.assertEqual(cn2_gt.route_class, "cn2_gt")
+        self.assertEqual(telecom.route_class, "telecom_163_direct")
 
     def test_unlimited_candidate_selection(self):
         candidates = [
@@ -101,7 +124,7 @@ class FindCn2Test(unittest.TestCase):
             state = MODULE.load_state(path)
         restored = state["192.0.2.1:443"]
         self.assertTrue(restored.cn2)
-        self.assertEqual(restored.trace_status, "cn2")
+        self.assertEqual(restored.trace_status, "cn2_gt")
 
     def test_progress_state_restores_trace_result(self):
         candidate = MODULE.Candidate("192.0.2.1", 443, "JP", "", "NRT", 4809, "", 1)
@@ -167,7 +190,7 @@ class FindCn2Test(unittest.TestCase):
             MODULE.create_measurement = original_create
             MODULE.wait_measurement = original_wait
         self.assertEqual(len(checkpoints), 2)
-        self.assertEqual([item.trace_status for item in candidates], ["not_cn2", "not_cn2"])
+        self.assertEqual([item.trace_status for item in candidates], ["other", "other"])
 
     def test_unfinished_trace_remains_pending_for_next_run(self):
         candidate = MODULE.Candidate(

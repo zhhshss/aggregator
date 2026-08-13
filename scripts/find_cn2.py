@@ -20,6 +20,8 @@ from pathlib import Path
 from typing import Callable
 
 CN2_ASNS = {4809, 23764}
+ROUTE_CLASSES = ("cn2_gia", "cn2_gt", "telecom_163_direct", "other")
+TELECOM_163_ASNS = {4134, 4812, 4813, 4816, 4817, 4818, 4819, 58461}
 DEFAULT_REGIONS = {"HK", "JP", "SG", "TW", "KR"}
 TRACE_LOCATIONS = (
     {"country": "CN", "city": "Guangzhou"},
@@ -46,6 +48,8 @@ class Candidate:
     trace_url: str = ""
     trace_status: str = "pending"
     traced_at: str = ""
+    route_class: str = ""
+    route_evidence: str = ""
 
 
 def parse_args() -> argparse.Namespace:
@@ -93,7 +97,14 @@ def load_state(path: Path) -> dict[str, Candidate]:
         for row in csv.DictReader(handle):
             try:
                 is_cn2 = parse_bool(row.get("cn2", ""))
-                trace_status = row.get("trace_status") or ("cn2" if is_cn2 else "pending")
+                route_class = row.get("route_class", "")
+                if not route_class and is_cn2:
+                    try:
+                        legacy_asn = int(row.get("asn") or 0)
+                    except ValueError:
+                        legacy_asn = 0
+                    route_class = "cn2_gia" if legacy_asn in CN2_ASNS else "cn2_gt"
+                trace_status = row.get("trace_status") or route_class or ("cn2_gia" if is_cn2 else "pending")
                 candidate = Candidate(
                     ip=str(ipaddress.ip_address(row["ip"].strip())),
                     port=int(row["port"]),
@@ -110,6 +121,8 @@ def load_state(path: Path) -> dict[str, Candidate]:
                     trace_url=row.get("trace_url", ""),
                     trace_status=trace_status,
                     traced_at=row.get("traced_at", ""),
+                    route_class=route_class,
+                    route_evidence=row.get("route_evidence", ""),
                 )
             except (KeyError, ValueError):
                 continue
@@ -129,6 +142,8 @@ def merge_state(candidates: list[Candidate], state: dict[str, Candidate]) -> Non
         candidate.trace_url = previous.trace_url
         candidate.trace_status = previous.trace_status
         candidate.traced_at = previous.traced_at
+        candidate.route_class = previous.route_class
+        candidate.route_evidence = previous.route_evidence
 
 
 def load_candidates(path: Path, regions: set[str]) -> list[Candidate]:
@@ -295,15 +310,33 @@ def wait_measurement(measurement_id: str, token: str) -> dict:
 
 def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
     evidence: list[str] = []
+    telecom_direct_evidence: list[str] = []
     for result in measurement.get("results", []):
         probe = result.get("probe", {})
         raw = result.get("result", {}).get("rawOutput", "")
         hops = sorted(set(re.findall(r"59\.43\.\d{1,3}\.\d{1,3}", raw)))
+        telecom_asns = sorted(
+            set(re.findall(r"AS(4134|4812|4813|4816|4817|4818|4819|58461)\b", raw, re.IGNORECASE))
+        )
         if hops:
             location = probe.get("city") or probe.get("country") or str(probe.get("asn", "CN"))
             evidence.append(f"{location}: {', '.join(hops)}")
+        elif telecom_asns:
+            location = probe.get("city") or probe.get("country") or str(probe.get("asn", "CN"))
+            telecom_direct_evidence.append(
+                f"{location}: {', '.join(f'AS{asn}' for asn in telecom_asns)}"
+            )
     candidate.cn2 = bool(evidence)
     candidate.cn2_evidence = "; ".join(evidence)
+    if candidate.cn2:
+        candidate.route_class = "cn2_gia" if candidate.asn in CN2_ASNS else "cn2_gt"
+        candidate.route_evidence = candidate.cn2_evidence
+    elif candidate.asn in TELECOM_163_ASNS or telecom_direct_evidence:
+        candidate.route_class = "telecom_163_direct"
+        candidate.route_evidence = "; ".join(telecom_direct_evidence) or f"目标 ASN: AS{candidate.asn}"
+    else:
+        candidate.route_class = "other"
+        candidate.route_evidence = ""
 
 
 def confirm_cn2(
@@ -355,7 +388,7 @@ def confirm_cn2(
                     checkpoint()
                 continue
             evaluate_trace(candidate, measurement)
-            candidate.trace_status = "cn2" if candidate.cn2 else "not_cn2"
+            candidate.trace_status = candidate.route_class
             if checkpoint:
                 checkpoint()
             print(f"[{index}/{len(trace_targets)}] {candidate.ip}: CN2={candidate.cn2}")
@@ -380,8 +413,9 @@ def write_progress(candidates: list[Candidate], path: Path) -> None:
 def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args: argparse.Namespace) -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     state_path = args.output_dir / "progress.csv"
-    confirmed = [item for item in all_candidates if item.cn2]
-    traced = [item for item in all_candidates if item.trace_status in {"cn2", "not_cn2"}]
+    classified = [item for item in all_candidates if item.route_class in ROUTE_CLASSES]
+    confirmed = [item for item in classified if item.cn2]
+    traced = classified
     pending = [item for item in alive if item.trace_status in {"pending", "unavailable"}]
     headers = list(Candidate.__dataclass_fields__)
     write_progress(all_candidates, state_path)
@@ -393,6 +427,14 @@ def write_outputs(all_candidates: list[Candidate], alive: list[Candidate], args:
         json.dumps([asdict(item) for item in confirmed], ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
+    for route_class in ROUTE_CLASSES:
+        members = [item for item in classified if item.route_class == route_class]
+        with (args.output_dir / f"{route_class}.csv").open(
+            "w", encoding="utf-8", newline=""
+        ) as handle:
+            writer = csv.DictWriter(handle, fieldnames=headers, lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(asdict(item) for item in members)
     report = [
         "# CN2 代理筛选报告",
         "",
