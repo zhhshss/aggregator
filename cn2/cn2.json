@@ -893,6 +893,25 @@
     "route_evidence": "Beijing: 59.43.46.82"
   },
   {
+    "ip": "207.57.134.179",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 139659,
+    "organization": "LUCIDACLOUD LIMITED",
+    "source_latency_ms": 2.0,
+    "baidu_delay_ms": 1273,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.248.246; Nanjing: 59.43.248.250, 59.43.42.33",
+    "trace_url": "https://globalping.io?measurement=2tKGZbJCQcwmPgTUS00020wHn",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:47:36Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.248.246; Nanjing: 59.43.248.250, 59.43.42.33"
+  },
+  {
     "ip": "216.23.116.10",
     "port": 443,
     "country": "HK",
