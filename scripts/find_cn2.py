@@ -170,6 +170,14 @@ def merge_completed_states(
     return merged
 
 
+def clear_dead_pending(candidates: list[Candidate]) -> None:
+    """清除本轮已确认失效候选的陈旧延迟，避免误报为待追踪。"""
+    for candidate in candidates:
+        if candidate.tested and candidate.baidu_delay_ms is None:
+            candidate.trace_status = "pending"
+            candidate.traced_at = ""
+
+
 def load_candidates(path: Path, regions: set[str]) -> list[Candidate]:
     candidates: list[Candidate] = []
     seen: set[tuple[str, int]] = set()
@@ -592,6 +600,7 @@ def main() -> int:
     merge_state(candidates, state)
     print(f"载入地区内 {len(candidates)} 个候选，恢复 {len(state)} 条进度")
     alive = validate_via_baidu(candidates, args)
+    clear_dead_pending(candidates)
     write_progress(candidates, state_path)
     pending = sum(
         candidate.trace_status in {"pending", "unavailable"}

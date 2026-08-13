@@ -129,6 +129,22 @@ class FindCn2Test(unittest.TestCase):
         self.assertEqual(calls, ["192.0.2.1"])
         self.assertEqual(result[0].baidu_delay_ms, 8)
 
+    def test_dead_candidate_does_not_keep_stale_alive_delay(self):
+        candidate = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            baidu_delay_ms=50, tested=True, trace_status="pending",
+        )
+        args = type("Args", (), {"max_candidates": 0, "concurrency": 1, "timeout_ms": 1})()
+        original = MODULE.test_candidate
+        MODULE.test_candidate = lambda item, timeout_ms: None
+        try:
+            alive = MODULE.validate_via_baidu([candidate], args)
+            MODULE.clear_dead_pending([candidate])
+        finally:
+            MODULE.test_candidate = original
+        self.assertEqual(alive, [])
+        self.assertIsNone(candidate.baidu_delay_ms)
+
     def test_legacy_cn2_csv_is_a_completed_checkpoint(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "cn2.csv"
