@@ -154,7 +154,7 @@ ip,port,country,city,datacenter,asn,organization,source_latency_ms,baidu_delay_m
 194.29.186.253,443,HK,香港,HKG,63473,"HostHatch, LLC",1.0,1714,True,False,,https://globalping.io?measurement=2p7Slhi09ibhXlcbL00020wGk,other,2026-08-13T05:42:22Z,other,
 198.20.133.100,443,HK,香港,HKG,149440,Evoxt Sdn. Bhd.,1.0,,True,False,,,pending,,,
 2.27.109.236,443,HK,香港,HKG,150452,LANDUPS LIMITED,1.0,2767,True,False,,https://globalping.io?measurement=2hLaO8imBrPX8FuZh00020wI2,other,2026-08-13T07:03:08Z,other,
-2.27.132.60,443,HK,香港,HKG,402279,Geoscry Network LLC,1.0,2415,True,False,,,pending,,,
+2.27.132.60,443,HK,香港,HKG,402279,Geoscry Network LLC,1.0,3569,True,False,,https://globalping.io?measurement=2AxeY7DJqTwXzvtl500020wIK,other,2026-08-13T07:21:00Z,other,
 205.189.160.50,443,HK,香港,HKG,133752,LEASEWEB HONG KONG LIMITED,1.0,2158,True,False,,https://globalping.io?measurement=2LDFbA9dA778dCkoO00020wHS,other,2026-08-13T06:26:14Z,other,
 208.75.133.158,443,HK,香港,HKG,46829,Lamhosting LLC,1.0,2052,True,False,,https://globalping.io?measurement=2AmpgUem88GSYc8ki00020wHH,other,2026-08-13T06:15:36Z,other,
 208.75.133.54,443,HK,香港,HKG,46829,Lamhosting LLC,1.0,2353,True,False,,https://globalping.io?measurement=238UohJVYMqbn4eWf00020wHs,other,2026-08-13T06:52:37Z,other,
