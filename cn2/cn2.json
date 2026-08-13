@@ -1957,6 +1957,25 @@
     "route_evidence": "Nanjing: 59.43.130.126, 59.43.139.117; Beijing: 59.43.130.106, 59.43.137.222"
   },
   {
+    "ip": "43.163.77.140",
+    "port": 443,
+    "country": "SG",
+    "city": "新加坡",
+    "datacenter": "SIN",
+    "asn": 132203,
+    "organization": "Tencent Building, Kejizhongyi Avenue",
+    "source_latency_ms": 31.0,
+    "baidu_delay_ms": 2096,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.130.162; Nanjing: 59.43.46.97",
+    "trace_url": "https://globalping.io?measurement=2xEKLL45OHDE2v8rs00020wHR",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T06:26:03Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.130.162; Nanjing: 59.43.46.97"
+  },
+  {
     "ip": "82.158.88.94",
     "port": 443,
     "country": "HK",
