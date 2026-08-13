@@ -16,7 +16,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from threading import Lock
 from typing import Callable
@@ -158,15 +158,26 @@ def merge_state(candidates: list[Candidate], state: dict[str, Candidate]) -> Non
 def merge_completed_states(
     base: dict[str, Candidate], incoming: dict[str, Candidate]
 ) -> dict[str, Candidate]:
-    """合并并行扫描结果，已完成的路由结果永不被待处理状态覆盖。"""
+    """采用最新活性状态合并快照，同时保留已经完成的路由结果。"""
     merged = dict(base)
     for key, candidate in incoming.items():
         current = merged.get(key)
-        if current is None or (
-            candidate.trace_status in ROUTE_CLASSES
-            and current.trace_status not in ROUTE_CLASSES
-        ):
+        if current is None or candidate.trace_status in ROUTE_CLASSES:
             merged[key] = candidate
+            continue
+        if current.trace_status not in ROUTE_CLASSES:
+            merged[key] = candidate
+            continue
+
+        latest = replace(candidate)
+        latest.cn2 = current.cn2
+        latest.cn2_evidence = current.cn2_evidence
+        latest.trace_url = current.trace_url
+        latest.trace_status = current.trace_status
+        latest.traced_at = current.traced_at
+        latest.route_class = current.route_class
+        latest.route_evidence = current.route_evidence
+        merged[key] = latest
     return merged
 
 

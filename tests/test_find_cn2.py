@@ -219,6 +219,26 @@ class FindCn2Test(unittest.TestCase):
         self.assertEqual(merged[MODULE.candidate_key(first)].trace_status, "other")
         self.assertEqual(merged[MODULE.candidate_key(second)].trace_status, "cn2_gt")
 
+    def test_parallel_progress_merge_uses_latest_liveness(self):
+        completed = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            baidu_delay_ms=50, tested=True, trace_status="cn2_gt",
+            route_class="cn2_gt", cn2=True,
+        )
+        dead = MODULE.Candidate(
+            "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
+            baidu_delay_ms=None, tested=True, trace_status="pending",
+        )
+        key = MODULE.candidate_key(completed)
+
+        merged = MODULE.merge_completed_states({key: completed}, {key: dead})
+
+        self.assertTrue(merged[key].tested)
+        self.assertIsNone(merged[key].baidu_delay_ms)
+        self.assertEqual(merged[key].trace_status, "cn2_gt")
+        self.assertEqual(merged[key].route_class, "cn2_gt")
+        self.assertTrue(merged[key].cn2)
+
     def test_confirm_skips_completed_candidates(self):
         completed = MODULE.Candidate(
             "192.0.2.1", 443, "JP", "", "NRT", 0, "", 1,
