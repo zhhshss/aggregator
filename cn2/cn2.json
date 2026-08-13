@@ -2698,6 +2698,25 @@
     "route_evidence": "Guangzhou: 59.43.144.209; Nanjing: 59.43.139.133; Beijing: 59.43.138.54, 59.43.46.82"
   },
   {
+    "ip": "191.222.213.234",
+    "port": 443,
+    "country": "JP",
+    "city": "东京",
+    "datacenter": "NRT",
+    "asn": 906,
+    "organization": "DMIT Cloud Services",
+    "source_latency_ms": 45.0,
+    "baidu_delay_ms": 1352,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Nanjing: 59.43.132.153, 59.43.39.166; Guangzhou: 59.43.141.146",
+    "trace_url": "https://globalping.io?measurement=2iYkIAYKgoSl0T4f800020wI8",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T07:08:44Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Nanjing: 59.43.132.153, 59.43.39.166; Guangzhou: 59.43.141.146"
+  },
+  {
     "ip": "65.49.237.102",
     "port": 443,
     "country": "JP",

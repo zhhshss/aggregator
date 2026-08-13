@@ -1585,7 +1585,7 @@ ip,port,country,city,datacenter,asn,organization,source_latency_ms,baidu_delay_m
 191.222.212.7,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
 191.222.213.164,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
 191.222.213.191,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
-191.222.213.234,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
+191.222.213.234,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,1352,True,True,"Nanjing: 59.43.132.153, 59.43.39.166; Guangzhou: 59.43.141.146",https://globalping.io?measurement=2iYkIAYKgoSl0T4f800020wI8,cn2_gt,2026-08-13T07:08:44Z,cn2_gt,"Nanjing: 59.43.132.153, 59.43.39.166; Guangzhou: 59.43.141.146"
 191.222.213.235,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
 191.222.213.69,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
 191.222.213.95,443,JP,东京,NRT,906,DMIT Cloud Services,45.0,,True,False,,,pending,,,
