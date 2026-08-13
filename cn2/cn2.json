@@ -57,6 +57,25 @@
     "route_evidence": "Guangzhou: 59.43.248.202; Nanjing: 59.43.187.182, 59.43.42.33"
   },
   {
+    "ip": "216.38.170.103",
+    "port": 443,
+    "country": "HK",
+    "city": "新加坡",
+    "datacenter": "SIN",
+    "asn": 4515,
+    "organization": "PCCW IMS Ltd (PCCW Business Internet Access)",
+    "source_latency_ms": 1.0,
+    "baidu_delay_ms": 1475,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.248.202; Beijing: 59.43.246.210, 59.43.38.106",
+    "trace_url": "https://globalping.io?measurement=2C0iaw1yO2wKxhRbD00020wGj",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:41:54Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.248.202; Beijing: 59.43.246.210, 59.43.38.106"
+  },
+  {
     "ip": "216.38.170.104",
     "port": 443,
     "country": "HK",
@@ -2622,6 +2641,25 @@
     "route_evidence": "Guangzhou: 59.43.137.226; Nanjing: 59.43.139.133"
   },
   {
+    "ip": "137.220.225.111",
+    "port": 443,
+    "country": "JP",
+    "city": "东京",
+    "datacenter": "NRT",
+    "asn": 152194,
+    "organization": "CTG Server Limited",
+    "source_latency_ms": 58.0,
+    "baidu_delay_ms": 1625,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Guangzhou: 59.43.130.198, 59.43.137.226; Nanjing: 59.43.138.66; Shenzhen: 59.43.159.18, 59.43.46.77",
+    "trace_url": "https://globalping.io?measurement=2efeLXzbcmGeu5Nxz00020wGj",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:42:08Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Guangzhou: 59.43.130.198, 59.43.137.226; Nanjing: 59.43.138.66; Shenzhen: 59.43.159.18, 59.43.46.77"
+  },
+  {
     "ip": "137.220.225.56",
     "port": 443,
     "country": "JP",
@@ -2829,6 +2867,25 @@
     "traced_at": "2026-08-13T04:46:43Z",
     "route_class": "cn2_gt",
     "route_evidence": "Nanjing: 59.43.139.113; Beijing: 59.43.137.222"
+  },
+  {
+    "ip": "23.27.0.65",
+    "port": 443,
+    "country": "HK",
+    "city": "香港",
+    "datacenter": "HKG",
+    "asn": 149440,
+    "organization": "Evoxt Sdn. Bhd.",
+    "source_latency_ms": 0.0,
+    "baidu_delay_ms": 1232,
+    "tested": true,
+    "cn2": true,
+    "cn2_evidence": "Nanjing: 59.43.139.109",
+    "trace_url": "https://globalping.io?measurement=2stb1oDMwgMUYI2Lw00020wGj",
+    "trace_status": "cn2_gt",
+    "traced_at": "2026-08-13T05:41:54Z",
+    "route_class": "cn2_gt",
+    "route_evidence": "Nanjing: 59.43.139.109"
   },
   {
     "ip": "38.47.213.57",
