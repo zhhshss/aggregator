@@ -42,8 +42,6 @@ jobs:
       XHTTP_HOST: xturn.ciallo0d000721.cc.cd
       XHTTP_ENTRY: xturn.ciallo0d000721.cc.cd
       XHTTP_UUID: ${{ secrets.TURN_XHTTP_UUID }}
-      FOFA_PAGES: "10"
-      FOFA_SIZE: "50"
 
     steps:
       - name: Checkout private scanner source
@@ -94,12 +92,12 @@ jobs:
           export_status=0
           if [[ -n "${FOFA_QUERY:-}" ]]; then
             python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
-              --countries '' --days 400 --window-days 14 --limit 4000 \
+              --countries '' --days 120 --window-days 30 --limit 4000 \
               -o fresh_turn_candidates.txt --json turn_candidates.json \
               || export_status=$?
           else
             python3 scripts/fofa_export_bulk.py --preset turn \
-              --countries SG,JP,KR,HK,TW --days 400 --window-days 14 --limit 4000 \
+              --countries SG,JP,KR,HK,TW --days 120 --window-days 30 --limit 4000 \
               -o fresh_turn_candidates.txt --json turn_candidates.json \
               || export_status=$?
           fi
