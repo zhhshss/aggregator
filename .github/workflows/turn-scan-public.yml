@@ -89,15 +89,18 @@ jobs:
             || echo "Previous report unavailable; relying on fresh candidates"
           cp turn_candidates.txt previous_turn_candidates.txt
 
+          : > fresh_turn_candidates.txt
+          # FOFA 发现是增量来源，不应独占整个 45 分钟任务。给它 8 分钟硬上限；
+          # 超时或网关故障时直接复检上次可用节点，确保扫描与发布仍能完成。
           export_status=0
           if [[ -n "${FOFA_QUERY:-}" ]]; then
-            python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
-              --countries '' --days 120 --window-days 30 --limit 4000 \
+            timeout 8m python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
+              --countries '' --days 90 --window-days 30 --limit 4000 \
               -o fresh_turn_candidates.txt --json turn_candidates.json \
               || export_status=$?
           else
-            python3 scripts/fofa_export_bulk.py --preset turn \
-              --countries SG,JP,KR,HK,TW --days 120 --window-days 30 --limit 4000 \
+            timeout 8m python3 scripts/fofa_export_bulk.py --preset turn \
+              --countries SG,JP,KR,HK,TW --days 90 --window-days 30 --limit 4000 \
               -o fresh_turn_candidates.txt --json turn_candidates.json \
               || export_status=$?
           fi
@@ -106,7 +109,7 @@ jobs:
             | sort -u > turn_candidates.txt
 
           if (( export_status != 0 )); then
-            echo "FOFA export unavailable; scanning retained TURN candidates" >&2
+            echo "FOFA export unavailable or timed out; scanning retained TURN candidates" >&2
           fi
           test -s turn_candidates.txt
 
