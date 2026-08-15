@@ -81,20 +81,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${FOFA_QUERY:-}" ]]; then
-            python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
-              --countries '' --days 400 --window-days 14 --limit 4000 \
-              -o turn_candidates.txt --json turn_candidates.json
-          else
-            python3 scripts/fofa_export_bulk.py --preset turn \
-              --countries SG,JP,KR,HK,TW --days 400 --window-days 14 --limit 4000 \
-              -o turn_candidates.txt --json turn_candidates.json
-          fi
+          # 先回灌上次可用节点。FOFA 临时不可用时仍能完成存量复检，
+          # 避免一次外部网关故障让整个每日扫描直接失败。
+          : > turn_candidates.txt
           python3 scripts/merge_turn_candidates.py \
             --report "$R2_PUBLIC_BASE/turn/turn_report.json" \
             --input turn_candidates.txt \
             --output turn_candidates.txt \
-            || echo "Previous report unavailable; using fresh candidates"
+            || echo "Previous report unavailable; relying on fresh candidates"
+          cp turn_candidates.txt previous_turn_candidates.txt
+
+          export_status=0
+          if [[ -n "${FOFA_QUERY:-}" ]]; then
+            python3 scripts/fofa_export_bulk.py -q "$FOFA_QUERY" \
+              --countries '' --days 400 --window-days 14 --limit 4000 \
+              -o fresh_turn_candidates.txt --json turn_candidates.json \
+              || export_status=$?
+          else
+            python3 scripts/fofa_export_bulk.py --preset turn \
+              --countries SG,JP,KR,HK,TW --days 400 --window-days 14 --limit 4000 \
+              -o fresh_turn_candidates.txt --json turn_candidates.json \
+              || export_status=$?
+          fi
+
+          cat previous_turn_candidates.txt fresh_turn_candidates.txt \
+            | sort -u > turn_candidates.txt
+
+          if (( export_status != 0 )); then
+            echo "FOFA export unavailable; scanning retained TURN candidates" >&2
+          fi
           test -s turn_candidates.txt
 
       - name: Scan and publish to R2
