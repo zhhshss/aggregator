@@ -22,8 +22,37 @@ from threading import Lock
 from typing import Callable
 
 CN2_ASNS = {4809, 23764}
-ROUTE_CLASSES = ("cn2_gia", "cn2_gt", "telecom_163_direct", "other")
 TELECOM_163_ASNS = {4134, 4812, 4813, 4816, 4817, 4818, 4819, 58461}
+CMIN2_ASNS = {58807}
+CU9929_ASNS = {10099}
+CUVIP_ASNS = {4837, 9929}
+SOFTBANK_ASNS = {17676}
+NTT_ASNS = {2914}
+IIJ_ASNS = {2497}
+TATA_ASNS = {6453}
+GTT_ASNS = {3257}
+COGENT_ASNS = {174}
+HKIX_ASNS = {4635}
+EIE_ASNS = {135377}
+
+ROUTE_CLASSES = (
+    "cn2_gia",
+    "cn2_gt",
+    "telecom_163_direct",
+    "cmin2",
+    "cu9929",
+    "cuvip",
+    "softbank",
+    "ntt",
+    "iij",
+    "tata",
+    "gtt",
+    "cogent",
+    "hkix",
+    "eie",
+    "other",
+)
+
 DEFAULT_REGIONS = {"HK", "JP", "SG", "TW", "KR"}
 TRACE_LOCATIONS = (
     {"country": "CN", "city": "Guangzhou"},
@@ -390,6 +419,7 @@ def wait_measurement(measurement_id: str, token: str, proxy_url: str = "") -> di
 def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
     evidence: list[str] = []
     telecom_direct_evidence: list[str] = []
+    quality_evidence: list[str] = []
     for result in measurement.get("results", []):
         probe = result.get("probe", {})
         raw = result.get("result", {}).get("rawOutput", "")
@@ -397,6 +427,18 @@ def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
         telecom_asns = sorted(
             set(re.findall(r"AS(4134|4812|4813|4816|4817|4818|4819|58461)\b", raw, re.IGNORECASE))
         )
+        cmin2_asns = sorted(set(re.findall(r"AS(58807)\b", raw, re.IGNORECASE)))
+        cu9929_asns = sorted(set(re.findall(r"AS(10099)\b", raw, re.IGNORECASE)))
+        cuvip_asns = sorted(set(re.findall(r"AS(4837|9929)\b", raw, re.IGNORECASE)))
+        softbank_asns = sorted(set(re.findall(r"AS(17676)\b", raw, re.IGNORECASE)))
+        ntt_asns = sorted(set(re.findall(r"AS(2914)\b", raw, re.IGNORECASE)))
+        iij_asns = sorted(set(re.findall(r"AS(2497)\b", raw, re.IGNORECASE)))
+        tata_asns = sorted(set(re.findall(r"AS(6453)\b", raw, re.IGNORECASE)))
+        gtt_asns = sorted(set(re.findall(r"AS(3257)\b", raw, re.IGNORECASE)))
+        cogent_asns = sorted(set(re.findall(r"AS(174)\b", raw, re.IGNORECASE)))
+        hkix_asns = sorted(set(re.findall(r"AS(4635)\b", raw, re.IGNORECASE)))
+        eie_asns = sorted(set(re.findall(r"AS(135377)\b", raw, re.IGNORECASE)))
+
         if hops:
             location = probe.get("city") or probe.get("country") or str(probe.get("asn", "CN"))
             evidence.append(f"{location}: {', '.join(hops)}")
@@ -405,6 +447,25 @@ def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
             telecom_direct_evidence.append(
                 f"{location}: {', '.join(f'AS{asn}' for asn in telecom_asns)}"
             )
+
+        quality_map = [
+            (cmin2_asns, "CMIN2"),
+            (cu9929_asns, "CU9929"),
+            (cuvip_asns, "CUVIP"),
+            (softbank_asns, "SoftBank"),
+            (ntt_asns, "NTT"),
+            (iij_asns, "IIJ"),
+            (tata_asns, "TATA"),
+            (gtt_asns, "GTT"),
+            (cogent_asns, "Cogent"),
+            (hkix_asns, "HKIX"),
+            (eie_asns, "EIE"),
+        ]
+        for asns, label in quality_map:
+            if asns:
+                location = probe.get("city") or probe.get("country") or str(probe.get("asn", "CN"))
+                quality_evidence.append(f"{location}: {label}({', '.join(f'AS{asn}' for asn in asns)})")
+
     candidate.cn2 = bool(evidence)
     candidate.cn2_evidence = "; ".join(evidence)
     if candidate.cn2:
@@ -413,6 +474,39 @@ def evaluate_trace(candidate: Candidate, measurement: dict) -> None:
     elif candidate.asn in TELECOM_163_ASNS or telecom_direct_evidence:
         candidate.route_class = "telecom_163_direct"
         candidate.route_evidence = "; ".join(telecom_direct_evidence) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in CMIN2_ASNS or any("CMIN2" in ev for ev in quality_evidence):
+        candidate.route_class = "cmin2"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "CMIN2" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in CU9929_ASNS or any("CU9929" in ev for ev in quality_evidence):
+        candidate.route_class = "cu9929"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "CU9929" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in CUVIP_ASNS or any("CUVIP" in ev for ev in quality_evidence):
+        candidate.route_class = "cuvip"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "CUVIP" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in SOFTBANK_ASNS or any("SoftBank" in ev for ev in quality_evidence):
+        candidate.route_class = "softbank"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "SoftBank" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in NTT_ASNS or any("NTT" in ev for ev in quality_evidence):
+        candidate.route_class = "ntt"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "NTT" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in IIJ_ASNS or any("IIJ" in ev for ev in quality_evidence):
+        candidate.route_class = "iij"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "IIJ" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in TATA_ASNS or any("TATA" in ev for ev in quality_evidence):
+        candidate.route_class = "tata"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "TATA" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in GTT_ASNS or any("GTT" in ev for ev in quality_evidence):
+        candidate.route_class = "gtt"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "GTT" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in COGENT_ASNS or any("Cogent" in ev for ev in quality_evidence):
+        candidate.route_class = "cogent"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "Cogent" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in HKIX_ASNS or any("HKIX" in ev for ev in quality_evidence):
+        candidate.route_class = "hkix"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "HKIX" in ev) or f"目标 ASN: AS{candidate.asn}"
+    elif candidate.asn in EIE_ASNS or any("EIE" in ev for ev in quality_evidence):
+        candidate.route_class = "eie"
+        candidate.route_evidence = "; ".join(ev for ev in quality_evidence if "EIE" in ev) or f"目标 ASN: AS{candidate.asn}"
     else:
         candidate.route_class = "other"
         candidate.route_evidence = ""

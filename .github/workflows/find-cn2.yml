@@ -5,10 +5,14 @@ on:
     - cron: "17 * * * *"
   workflow_dispatch:
     inputs:
+      zip_url:
+        description: "CF 反代 IP zip 下载地址"
+        required: false
+        default: "https://zip.cm.edu.kg/ip.zip"
       regions:
         description: "优先测试的地区代码，逗号分隔"
         required: false
-        default: "HK,JP,SG,TW,KR"
+        default: "HK,JP,SG,TW,KR,US,GB,DE,NL,FR"
       max_candidates:
         description: "百度前置测试上限（0=地区内全部）"
         required: false
@@ -21,6 +25,10 @@ on:
         description: "并发路由追踪数"
         required: false
         default: "20"
+      port:
+        description: "只提取该端口目录"
+        required: false
+        default: "443"
 
 concurrency:
   group: find-cn2-proxies
@@ -46,8 +54,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check input CSV
-        run: test -s "Global-proxyip-443.csv"
+      - name: Fetch latest CF proxy IPs
+        env:
+          ZIP_URL: ${{ github.event.inputs.zip_url || 'https://zip.cm.edu.kg/ip.zip' }}
+          REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR,US,GB,DE,NL,FR' }}
+          PORT: ${{ github.event.inputs.port || '443' }}
+        run: |
+          python -u scripts/fetch_cf_ips.py \
+            --zip-url "$ZIP_URL" \
+            --port "$PORT" \
+            --regions "$REGIONS" \
+            --output Global-proxyip-443.csv \
+            --timeout 30
 
       - name: Prepare Globalping proxy pool
         shell: bash
@@ -64,7 +82,7 @@ jobs:
         id: scan
         continue-on-error: true
         env:
-          REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR' }}
+          REGIONS: ${{ github.event.inputs.regions || 'HK,JP,SG,TW,KR,US,GB,DE,NL,FR' }}
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '0' }}
           MAX_TRACES: ${{ github.event.inputs.max_traces || '60' }}
           TRACE_CONCURRENCY: ${{ github.event.inputs.trace_concurrency || '20' }}
