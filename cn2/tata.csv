@@ -1,0 +1,4 @@
+ip,port,country,city,datacenter,asn,organization,source_latency_ms,baidu_delay_ms,tested,cn2,cn2_evidence,trace_url,trace_status,traced_at,route_class,route_evidence
+143.198.97.84,443,US,,US,0,,,1561,True,False,,https://globalping.io?measurement=2V9t0VpKjbh8XNJ0A00021EuW,tata,2026-10-02T00:00:32Z,tata,Nanjing: TATA(AS6453)
+165.227.3.101,443,US,,US,0,,,1539,True,False,,https://globalping.io?measurement=272QOz0kEJoN9WSY500021EuW,tata,2026-10-02T00:00:28Z,tata,Nanjing: TATA(AS6453)
+223.165.6.148,443,US,,US,0,,,1559,True,False,,https://globalping.io?measurement=2RZxt6es8HwLybFJ100021EuW,tata,2026-10-02T00:00:29Z,tata,Guangzhou: TATA(AS6453); Nanjing: TATA(AS6453); Beijing: TATA(AS6453); Guangzhou: TATA(AS6453)
