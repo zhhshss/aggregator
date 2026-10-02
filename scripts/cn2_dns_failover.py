@@ -30,18 +30,6 @@ TEST_HOST = "cp.cloudflare.com"
 TEST_URL = f"https://{TEST_HOST}/"
 ROUTE_PRIORITY = ("cn2_gia", "cn2_gt", "telecom_163_direct")
 
-# 已知数据源标注错误的 IP 段：实际归属与宣称国家不符
-# 68.64.0.0/16 为美国 Cogent，数据源误标为 HK
-BOGUS_COUNTRY_PREFIXES: dict[str, tuple[str, ...]] = {
-    "HK": ("68.64.",),
-}
-
-
-def is_bogus_country_ip(ip: str, claimed_country: str) -> bool:
-    """检查 IP 是否属于已知标注错误的段。"""
-    prefixes = BOGUS_COUNTRY_PREFIXES.get(claimed_country, ())
-    return any(ip.startswith(prefix) for prefix in prefixes)
-
 
 @dataclass(frozen=True)
 class Candidate:
@@ -83,8 +71,6 @@ def load_candidates(path: Path) -> dict[str, list[Candidate]]:
             except (KeyError, ValueError):
                 continue
             if route_class not in ROUTE_PRIORITY or not country or (country, ip) in seen:
-                continue
-            if is_bogus_country_ip(ip, country):
                 continue
             seen.add((country, ip))
             grouped.setdefault(country, []).append(Candidate(ip, country, delay, route_class))
