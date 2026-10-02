@@ -1,12 +1,12 @@
 # CN2 代理筛选报告
 
-- CSV 地区候选数：8945
-- 经百度前置测试数：8945
-- 可用数：5701
-- 已完成路由追踪：2043
-- 待路由追踪：4800
+- CSV 地区候选数：9228
+- 经百度前置测试数：9228
+- 可用数：5905
+- 已完成路由追踪：2105
+- 待路由追踪：4947
 - Globalping 平台不可追踪：0
-- CN2 路由确认数：237
+- CN2 路由确认数：243
 
 判断标准：经给定百度 HTTP CONNECT 前置可连接目标代理，且中国电信探针的回程 traceroute 出现 `59.43.0.0/16`。
 
@@ -26,7 +26,7 @@
 | `156.238.232.7` | 443 | HK/HKG | AS401696 | None ms | Nanjing: 59.43.46.101; Shenzhen: 59.43.130.114 | [查看](https://globalping.io?measurement=2318Ktwlwc3pQwguv00020wGp) |
 | `165.99.42.86` | 443 | HK/HKG | AS401701 | 4408 ms | Guangzhou: 59.43.130.114, 59.43.248.246; Beijing: 59.43.181.222, 59.43.19.94, 59.43.246.226 | [查看](https://globalping.io?measurement=2rxcprta5C4l0nuTx00020wGv) |
 | `166.88.77.181` | 443 | HK/HKG | AS149440 | None ms | Nanjing: 59.43.139.129 | [查看](https://globalping.io?measurement=2HFpVGmKwkJdTTqNz00020wHC) |
-| `175.29.23.34` | 443 | HK/HK | AS0 | 4284 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.129, 59.43.187.182; Beijing: 59.43.132.30, 59.43.250.174 | [查看](https://globalping.io?measurement=2NGChCw18cKL5U5xf00020wHC) |
+| `175.29.23.34` | 443 | HK/HK | AS0 | 1945 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.129, 59.43.187.182; Beijing: 59.43.132.30, 59.43.250.174 | [查看](https://globalping.io?measurement=2NGChCw18cKL5U5xf00020wHC) |
 | `175.29.23.46` | 443 | HK/HKG | AS137897 | None ms | Guangzhou: 59.43.187.178, 59.43.250.50; Nanjing: 59.43.187.178, 59.43.42.33; Beijing: 59.43.246.210; Shenzhen: 59.43.16.166, 59.43.183.106 | [查看](https://globalping.io?measurement=2b65AXKt4U8N2DKuA00020wGv) |
 | `191.222.216.163` | 443 | HK/HKG | AS906 | 1418 ms | Shenzhen: 59.43.250.54 | [查看](https://globalping.io?measurement=2Zt8Z91aP5UrDYD5L00020wFc) |
 | `191.222.216.205` | 443 | HK/HKG | AS906 | None ms | Xi'an: 59.43.46.157 | [查看](https://globalping.io?measurement=2XjG9uQt12T5x4G8K00020wb9) |
@@ -50,31 +50,31 @@
 | `96.126.179.91` | 443 | HK/HKG | AS149440 | None ms | Guangzhou: 59.43.250.54; Beijing: 59.43.142.234 | [查看](https://globalping.io?measurement=2wJbiu0V5YSEZvMJG000211G3) |
 | `23.27.48.113` | 443 | SG/SIN | AS20473 | None ms | Guangzhou: 59.43.130.158; Nanjing: 59.43.123.89, 59.43.130.114; Beijing: 59.43.137.222 | [查看](https://globalping.io?measurement=2tt6mlkxCrnqSpPEV00020wH1) |
 | `103.108.67.74` | 443 | HK/HKG | AS401696 | None ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.109, 59.43.181.94 | [查看](https://globalping.io?measurement=2SCmXrHTEpvKQ9ya700020wFq) |
-| `103.118.41.121` | 443 | HK/HK | AS0 | 4573 ms | Nanjing: 59.43.132.153, 59.43.159.98; Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2RSlfLHQzAPCF32Xl00020wFv) |
+| `103.118.41.121` | 443 | HK/HK | AS0 | 1887 ms | Nanjing: 59.43.132.153, 59.43.159.98; Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2RSlfLHQzAPCF32Xl00020wFv) |
 | `103.24.219.134` | 443 | HK/HKG | AS42960 | None ms | Guangzhou: 59.43.16.166, 59.43.248.250; Nanjing: 59.43.139.117, 59.43.183.110, 59.43.22.33; Beijing: 59.43.182.110, 59.43.19.98, 59.43.246.226 | [查看](https://globalping.io?measurement=2LgBXxuyqqe2oceQT00020w5d) |
 | `103.242.15.87` | 443 | HK/HKG | AS401696 | 1396 ms | Nanjing: 59.43.39.118, 59.43.46.101; Nanjing: 59.43.130.210, 59.43.139.137 | [查看](https://globalping.io?measurement=23haVCSxjawO0Gq4h00020w5g) |
 | `149.104.2.56` | 443 | HK/HKG | AS932 | 1289 ms | Beijing: 59.43.138.58, 59.43.181.54, 59.43.46.86; Xi'an: 59.43.181.54, 59.43.46.157 | [查看](https://globalping.io?measurement=2P5OSxTtxelpqMLCh00020wES) |
 | `149.104.3.16` | 443 | HK/HKG | AS42960 | None ms | Guangzhou: 59.43.183.110; Beijing: 59.43.132.26, 59.43.248.2, 59.43.38.130 | [查看](https://globalping.io?measurement=2ZXpmVrHgq6HFqHna00020wFF) |
 | `149.104.3.97` | 443 | HK/HKG | AS42960 | None ms | Beijing: 59.43.19.98, 59.43.246.226 | [查看](https://globalping.io?measurement=2aOiuYWLp5GQcnK8U00020wFc) |
-| `149.104.31.208` | 443 | HK/HK | AS0 | 1444 ms | Guangzhou: 59.43.16.166, 59.43.183.110; Nanjing: 59.43.130.158, 59.43.139.113, 59.43.248.250 | [查看](https://globalping.io?measurement=2atDXEVXmL0F9BUpP00020wER) |
+| `149.104.31.208` | 443 | HK/HK | AS0 | 2307 ms | Guangzhou: 59.43.16.166, 59.43.183.110; Nanjing: 59.43.130.158, 59.43.139.113, 59.43.248.250 | [查看](https://globalping.io?measurement=2atDXEVXmL0F9BUpP00020wER) |
 | `149.104.5.234` | 443 | HK/HKG | AS42960 | 1468 ms | Guangzhou: 59.43.130.118, 59.43.188.122, 59.43.250.170; Nanjing: 59.43.188.122, 59.43.42.33; Beijing: 59.43.132.30, 59.43.246.226, 59.43.38.118 | [查看](https://globalping.io?measurement=2NZx4FSJYmjxg0bAt00020wF6) |
-| `149.104.6.130` | 443 | HK/HKG | AS42960 | 1399 ms | Nanjing: 59.43.159.18, 59.43.46.101; Shenzhen: 59.43.130.110 | [查看](https://globalping.io?measurement=2mkcN3bgOuwq2wLe400020wFF) |
-| `149.104.6.15` | 443 | HK/HK | AS0 | 1516 ms | Guangzhou: 59.43.181.14; Nanjing: 59.43.138.46, 59.43.38.166, 59.43.46.101; Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2ir6njNYFniL2myAr00020wF6) |
+| `149.104.6.130` | 443 | HK/HK | AS0 | 1104 ms | Nanjing: 59.43.159.18, 59.43.46.101; Shenzhen: 59.43.130.110 | [查看](https://globalping.io?measurement=2mkcN3bgOuwq2wLe400020wFF) |
+| `149.104.6.15` | 443 | HK/HK | AS0 | 1554 ms | Guangzhou: 59.43.181.14; Nanjing: 59.43.138.46, 59.43.38.166, 59.43.46.101; Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2ir6njNYFniL2myAr00020wF6) |
 | `154.219.104.79` | 443 | HK/HKG | AS401701 | None ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.139.109, 59.43.188.122; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2aeN9ouECE4UrSX5s00020wF6) |
-| `175.29.23.138` | 443 | HK/HK | AS0 | 2781 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.109, 59.43.183.106; Beijing: 59.43.246.210 | [查看](https://globalping.io?measurement=2q2hDPdecO3DTJBJR00020wH1) |
+| `175.29.23.138` | 443 | HK/HK | AS0 | 3068 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.109, 59.43.183.106; Beijing: 59.43.246.210 | [查看](https://globalping.io?measurement=2q2hDPdecO3DTJBJR00020wH1) |
 | `185.216.118.161` | 443 | HK/HKG | AS55933 | None ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.129, 59.43.188.122 | [查看](https://globalping.io?measurement=21wE5m4pwUrgfTLHk00020wF6) |
 | `192.252.179.26` | 443 | HK/HKG | AS152194 | None ms | Nanjing: 59.43.139.133 | [查看](https://globalping.io?measurement=2T9J8mAsNc0jYxQpj00020ySR) |
 | `192.252.179.94` | 443 | HK/HKG | AS152194 | None ms | Guangzhou: 59.43.130.114; Nanjing: 59.43.132.153, 59.43.38.182; Guangzhou: 59.43.130.158 | [查看](https://globalping.io?measurement=2ZKud0yQ8sYzbmlgv00020wGZ) |
-| `193.134.209.165` | 443 | HK/HK | AS0 | 1689 ms | Guangzhou: 59.43.248.246; Beijing: 59.43.183.118, 59.43.248.2 | [查看](https://globalping.io?measurement=25PJ2JNtuTityu0X100020wFc) |
+| `193.134.209.165` | 443 | HK/HK | AS0 | 1568 ms | Guangzhou: 59.43.248.246; Beijing: 59.43.183.118, 59.43.248.2 | [查看](https://globalping.io?measurement=25PJ2JNtuTityu0X100020wFc) |
 | `198.44.182.190` | 443 | HK/HKG | AS62468 | None ms | Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2LQdiR7UfeucmtKY900020wES) |
 | `207.57.123.29` | 443 | HK/HKG | AS139659 | None ms | Nanjing: 59.43.139.129; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2w0NLbW2PzfVk2Nvd00020wI2) |
 | `207.57.123.38` | 443 | HK/HKG | AS139659 | None ms | Nanjing: 59.43.123.89, 59.43.248.246; Nanjing: 59.43.139.113, 59.43.188.122 | [查看](https://globalping.io?measurement=2oRI4y90B6MjWyptV00020wI3) |
-| `207.57.123.77` | 443 | HK/HK | AS0 | 3947 ms | Nanjing: 59.43.123.89, 59.43.130.158, 59.43.248.246; Nanjing: 59.43.188.122, 59.43.42.33 | [查看](https://globalping.io?measurement=2g5225EQLLj0RUHoz00020wI3) |
+| `207.57.123.77` | 443 | HK/HK | AS0 | 4521 ms | Nanjing: 59.43.123.89, 59.43.130.158, 59.43.248.246; Nanjing: 59.43.188.122, 59.43.42.33 | [查看](https://globalping.io?measurement=2g5225EQLLj0RUHoz00020wI3) |
 | `207.57.133.172` | 443 | HK/HKG | AS139659 | 5753 ms | Nanjing: 59.43.130.118, 59.43.139.113, 59.43.188.122 | [查看](https://globalping.io?measurement=2lPy4NM7RlhNvFMcg00020wI3) |
 | `207.57.134.179` | 443 | HK/HKG | AS139659 | None ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.248.250, 59.43.42.33 | [查看](https://globalping.io?measurement=2tKGZbJCQcwmPgTUS00020wHn) |
 | `216.23.116.10` | 443 | HK/HKG | AS42960 | 1881 ms | Nanjing: 59.43.139.129, 59.43.22.33 | [查看](https://globalping.io?measurement=2awf7T9yTuSvWkSJb00020wEu) |
 | `38.147.172.53` | 443 | HK/HKG | AS139659 | None ms | Guangzhou: 59.43.130.110, 59.43.248.246; Nanjing: 59.43.22.33, 59.43.248.246, 59.43.42.33 | [查看](https://globalping.io?measurement=2lFyrDt1lMIKSMpSt00020wGZ) |
-| `38.147.173.136` | 443 | HK/HK | AS0 | 1536 ms | Guangzhou: 59.43.130.114, 59.43.248.250; Nanjing: 59.43.139.109, 59.43.248.246 | [查看](https://globalping.io?measurement=2tAqVWl7GOXWHrtl500020wFk) |
+| `38.147.173.136` | 443 | HK/HK | AS0 | 1174 ms | Guangzhou: 59.43.130.114, 59.43.248.250; Nanjing: 59.43.139.109, 59.43.248.246 | [查看](https://globalping.io?measurement=2tAqVWl7GOXWHrtl500020wFk) |
 | `38.147.173.236` | 443 | HK/HKG | AS139659 | 1394 ms | Guangzhou: 59.43.183.110; Shenzhen: 59.43.248.246 | [查看](https://globalping.io?measurement=2aGa2IYetdjuMRsV600020wEm) |
 | `38.147.191.12` | 443 | HK/HKG | AS6134 | 2783 ms | Nanjing: 59.43.139.113, 59.43.181.94, 59.43.188.122; Shenzhen: 59.43.188.122 | [查看](https://globalping.io?measurement=2FnzamPBNWIJVlsHd00020wI3) |
 | `38.207.133.44` | 443 | HK/HKG | AS6134 | None ms | Guangzhou: 59.43.248.250, 59.43.250.170; Nanjing: 59.43.139.117, 59.43.248.250; Beijing: 59.43.246.226; Xi'an: 59.43.248.250, 59.43.93.109 | [查看](https://globalping.io?measurement=20sTzpgv7jAhGiGBW00020wEi) |
@@ -88,24 +88,24 @@
 | `45.131.179.101` | 443 | HK/HKG | AS6134 | None ms | Guangzhou: 59.43.130.126 | [查看](https://globalping.io?measurement=2HDF6XBtsj59bOqo500020wEn) |
 | `45.145.229.223` | 443 | HK/HK | AS0 | None ms | Guangzhou: 59.43.16.166, 59.43.181.14, 59.43.183.110; Nanjing: 59.43.139.117, 59.43.248.250; Beijing: 59.43.19.94, 59.43.248.2; Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=2QbOKhdYHoO67MNhJ00020wFF) |
 | `45.78.28.90` | 443 | HK/HKG | AS25820 | 1704 ms | Nanjing: 59.43.130.194, 59.43.46.97 | [查看](https://globalping.io?measurement=2Y4lsA8NOWldEMzv4000210ta) |
-| `68.64.179.129` | 443 | HK/HK | AS0 | 1544 ms | Guangzhou: 59.43.188.122, 59.43.250.110; Beijing: 59.43.181.222, 59.43.246.226; Shenzhen: 59.43.183.110 | [查看](https://globalping.io?measurement=2BP1oPeBmSDFB2wE300020wFF) |
+| `68.64.179.129` | 443 | HK/HK | AS0 | 1175 ms | Guangzhou: 59.43.188.122, 59.43.250.110; Beijing: 59.43.181.222, 59.43.246.226; Shenzhen: 59.43.183.110 | [查看](https://globalping.io?measurement=2BP1oPeBmSDFB2wE300020wFF) |
 | `68.64.182.121` | 443 | HK/HK | AS0 | None ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.139.113, 59.43.248.246; Xi'an: 59.43.188.122, 59.43.93.109 | [查看](https://globalping.io?measurement=2i5PdfyPYYRsgSUR100020wEj) |
-| `68.64.182.205` | 443 | HK/HK | AS0 | 1736 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.139.113, 59.43.188.122 | [查看](https://globalping.io?measurement=2hKLJq2QZUIqO49JX00020wF6) |
+| `68.64.182.205` | 443 | HK/HK | AS0 | 2035 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.139.113, 59.43.188.122 | [查看](https://globalping.io?measurement=2hKLJq2QZUIqO49JX00020wF6) |
 | `83.229.127.224` | 443 | HK/HKG | AS139659 | 1182 ms | Guangzhou: 59.43.16.166, 59.43.248.246; Nanjing: 59.43.248.246, 59.43.42.33; Beijing: 59.43.132.26, 59.43.248.2, 59.43.38.126 | [查看](https://globalping.io?measurement=2ncIvuNXz1ja3ZdjS00020wFE) |
 | `43.159.4.80` | 443 | SG/SIN | AS132203 | None ms | Nanjing: 59.43.132.153 | [查看](https://globalping.io?measurement=29AtQBn00L1V1R3C200020wEj) |
-| `103.118.252.100` | 443 | HK/HK | AS0 | 3851 ms | Guangzhou: 59.43.183.110; Beijing: 59.43.181.222, 59.43.246.226 | [查看](https://globalping.io?measurement=2cl6JxDyS7PpPB6KW00020wGC) |
-| `103.143.81.178` | 443 | HK/HK | AS0 | 1194 ms | Nanjing: 59.43.139.109, 59.43.248.250; Beijing: 59.43.246.226 | [查看](https://globalping.io?measurement=2Kn6eo2bcmlLzRYTD00020wEi) |
+| `103.118.252.100` | 443 | HK/HK | AS0 | 3625 ms | Guangzhou: 59.43.183.110; Beijing: 59.43.181.222, 59.43.246.226 | [查看](https://globalping.io?measurement=2cl6JxDyS7PpPB6KW00020wGC) |
+| `103.143.81.178` | 443 | HK/HK | AS0 | 1154 ms | Nanjing: 59.43.139.109, 59.43.248.250; Beijing: 59.43.246.226 | [查看](https://globalping.io?measurement=2Kn6eo2bcmlLzRYTD00020wEi) |
 | `103.214.174.40` | 443 | HK/HKG | AS42960 | None ms | Guangzhou: 59.43.130.122; Nanjing: 59.43.138.50, 59.43.46.101 | [查看](https://globalping.io?measurement=2xy14kQIVvI74zvUB00020wFq) |
-| `149.104.12.254` | 443 | HK/HK | AS0 | 1199 ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.139.129, 59.43.16.182, 59.43.248.250 | [查看](https://globalping.io?measurement=2sNDoqWs50IfXoBLx00020wFq) |
+| `149.104.12.254` | 443 | HK/HK | AS0 | 986 ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.139.129, 59.43.16.182, 59.43.248.250 | [查看](https://globalping.io?measurement=2sNDoqWs50IfXoBLx00020wFq) |
 | `149.104.25.194` | 443 | HK/HKG | AS139659 | 1083 ms | Guangzhou: 59.43.248.246; Beijing: 59.43.246.226 | [查看](https://globalping.io?measurement=2o1ydwKrSM8jFdnmy00020wGC) |
-| `149.104.30.51` | 443 | HK/HK | AS0 | 1340 ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.123.89, 59.43.130.162, 59.43.188.122; Beijing: 59.43.183.118, 59.43.19.98, 59.43.248.2 | [查看](https://globalping.io?measurement=2ZkBeGKCQPaa0Zl8a00020wF6) |
+| `149.104.30.51` | 443 | HK/HK | AS0 | 972 ms | Guangzhou: 59.43.248.250; Nanjing: 59.43.123.89, 59.43.130.162, 59.43.188.122; Beijing: 59.43.183.118, 59.43.19.98, 59.43.248.2 | [查看](https://globalping.io?measurement=2ZkBeGKCQPaa0Zl8a00020wF6) |
 | `156.239.11.208` | 443 | HK/HKG | AS154321 | None ms | Nanjing: 59.43.139.129, 59.43.248.250 | [查看](https://globalping.io?measurement=2frLG2aT2rtpcL6u700020wFv) |
 | `156.239.12.210` | 443 | HK/HKG | AS154321 | None ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.117, 59.43.248.250, 59.43.250.50 | [查看](https://globalping.io?measurement=2ETnrcuAQ5F2u06YD00020wEP) |
 | `165.154.20.213` | 443 | HK/HKG | AS135377 | 1039 ms | Xi'an: 59.43.156.129 | [查看](https://globalping.io?measurement=2NwI4Ze38yVhBR39600020wEP) |
 | `193.134.209.123` | 443 | HK/HKG | AS139659 | None ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.117, 59.43.248.250 | [查看](https://globalping.io?measurement=2NFwZUFDzH4BFXkEK00020wEK) |
 | `207.57.129.126` | 443 | HK/HKG | AS139659 | 3258 ms | Nanjing: 59.43.139.109, 59.43.248.246; Nanjing: 59.43.139.109, 59.43.183.110, 59.43.22.41 | [查看](https://globalping.io?measurement=27rubcB2jRhyG59co00020wI3) |
 | `207.57.129.55` | 443 | HK/HKG | AS139659 | None ms | Nanjing: 59.43.139.129, 59.43.248.250 | [查看](https://globalping.io?measurement=28pbqFGDiTDEoP7NT00020wI2) |
-| `38.147.171.13` | 443 | HK/HK | AS0 | 1387 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.123.89, 59.43.248.250; Beijing: 59.43.246.226, 59.43.249.49 | [查看](https://globalping.io?measurement=289SKmjS6dffPZiY000020wFq) |
+| `38.147.171.13` | 443 | HK/HK | AS0 | 1421 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.123.89, 59.43.248.250; Beijing: 59.43.246.226, 59.43.249.49 | [查看](https://globalping.io?measurement=289SKmjS6dffPZiY000020wFq) |
 | `38.207.164.126` | 443 | HK/HKG | AS967 | None ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.139.109, 59.43.248.246; Beijing: 59.43.181.222, 59.43.246.226 | [查看](https://globalping.io?measurement=2WZK2j3AZtkAnR32x00020wEi) |
 | `38.207.184.41` | 443 | HK/HKG | AS967 | None ms | Nanjing: 59.43.130.154, 59.43.139.129, 59.43.183.110; Beijing: 59.43.246.226 | [查看](https://globalping.io?measurement=2csbDRXYaLSPTuEXv00020wFk) |
 | `38.47.103.167` | 443 | HK/HKG | AS55933 | 1571 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.117, 59.43.183.110, 59.43.250.110 | [查看](https://globalping.io?measurement=2oj5vtScOVEvRra5w00020wFk) |
@@ -113,22 +113,22 @@
 | `38.55.194.187` | 443 | HK/HKG | AS139659 | 1601 ms | Guangzhou: 59.43.130.110, 59.43.188.122 | [查看](https://globalping.io?measurement=2yANQARQTYQbxqsay00020wGC) |
 | `38.55.195.57` | 443 | HK/HKG | AS139659 | None ms | Guangzhou: 59.43.248.250; Beijing: 59.43.181.242, 59.43.246.226 | [查看](https://globalping.io?measurement=2Gk42xhx24xGFOxfx00020wFk) |
 | `38.55.198.250` | 443 | HK/HKG | AS139659 | 1342 ms | Guangzhou: 59.43.183.110 | [查看](https://globalping.io?measurement=2ifg2E4hdUdSYIzpT00020wFc) |
-| `38.55.199.128` | 443 | HK/HK | AS0 | 1576 ms | Nanjing: 59.43.139.117; Shenzhen: 59.43.188.122, 59.43.250.110 | [查看](https://globalping.io?measurement=2uuQKp8D07nlozuif00020wFq) |
+| `38.55.199.128` | 443 | HK/HK | AS0 | 1202 ms | Nanjing: 59.43.139.117; Shenzhen: 59.43.188.122, 59.43.250.110 | [查看](https://globalping.io?measurement=2uuQKp8D07nlozuif00020wFq) |
 | `45.135.119.16` | 443 | HK/HKG | AS6134 | None ms | Nanjing: 59.43.130.162, 59.43.139.113, 59.43.183.110; Nanjing: 59.43.139.113, 59.43.248.250 | [查看](https://globalping.io?measurement=2OqkFSgwRzzK01lGH00020yJf) |
 | `45.136.13.92` | 443 | HK/HKG | AS139659 | None ms | Nanjing: 59.43.123.89, 59.43.183.110; Beijing: 59.43.132.14, 59.43.248.2; Nanjing: 59.43.139.117, 59.43.183.110 | [查看](https://globalping.io?measurement=21ly5tG8ak9iwn7km00020wFF) |
 | `45.145.228.222` | 443 | HK/HK | AS0 | None ms | Nanjing: 59.43.139.129, 59.43.248.246; Shenzhen: 59.43.183.110 | [查看](https://globalping.io?measurement=2FAZdoX53WESDRAbr00020wFv) |
 | `45.152.67.25` | 443 | HK/HKG | AS139659 | None ms | Guangzhou: 59.43.130.110, 59.43.248.250; Beijing: 59.43.181.222, 59.43.246.226; Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=2TSqFcGneZjdCCNDV00020wFF) |
-| `68.64.182.79` | 443 | HK/HKG | AS139659 | 1296 ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.109, 59.43.248.246; Nanjing: 59.43.139.109, 59.43.183.110 | [查看](https://globalping.io?measurement=27qOEvbWcyQ0hRwyq00020w5b) |
+| `68.64.182.79` | 443 | HK/HK | AS0 | 1261 ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.109, 59.43.248.246; Nanjing: 59.43.139.109, 59.43.183.110 | [查看](https://globalping.io?measurement=27qOEvbWcyQ0hRwyq00020w5b) |
 | `122.10.114.43` | 443 | HK/HKG | AS24544 | None ms | Guangzhou: 59.43.183.110; Shenzhen: 59.43.248.250 | [查看](https://globalping.io?measurement=20N5IRlm5nr5XSbJv00020wHG) |
 | `165.154.21.142` | 443 | HK/HKG | AS135377 | 1441 ms | Guangzhou: 59.43.250.50; Nanjing: 59.43.139.137 | [查看](https://globalping.io?measurement=2EQh1zOqacEfIa8AB00020wF7) |
 | `43.249.174.253` | 443 | HK/HKG | AS138415 | None ms | Guangzhou: 59.43.159.18, 59.43.46.77; Nanjing: 59.43.130.190; Guangzhou: 59.43.130.214, 59.43.141.146, 59.43.186.226 | [查看](https://globalping.io?measurement=2Qq4bBvfYuYhUmvEE00020wGZ) |
 | `47.75.113.97` | 443 | HK/HKG | AS45102 | None ms | Nanjing: 59.43.132.153, 59.43.39.190 | [查看](https://globalping.io?measurement=2CwBQoTNih9A6kkTv00020y8x) |
 | `103.118.42.225` | 443 | HK/HKG | AS976 | None ms | Beijing: 59.43.46.82 | [查看](https://globalping.io?measurement=2c5cLanayppt8Uztt00020wGZ) |
-| `45.152.65.100` | 443 | HK/HK | AS0 | 1595 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.109, 59.43.183.110 | [查看](https://globalping.io?measurement=2M9l2WN9GGQ0KjE7o00020wF6) |
+| `45.152.65.100` | 443 | HK/HK | AS0 | 1198 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.109, 59.43.183.110 | [查看](https://globalping.io?measurement=2M9l2WN9GGQ0KjE7o00020wF6) |
 | `216.38.170.177` | 443 | HK/SIN | AS137897 | 1575 ms | Beijing: 59.43.182.190, 59.43.19.98, 59.43.246.210 | [查看](https://globalping.io?measurement=2zCmHeDyCtifVOHjd00020wGC) |
 | `162.4.136.79` | 443 | HK/HKG | AS55933 | None ms | Guangzhou: 59.43.130.162, 59.43.248.250; Nanjing: 59.43.139.109, 59.43.16.166, 59.43.188.122; Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=29VdEhBAEGhfE1nvK00020wFE) |
 | `38.207.175.9` | 443 | HK/HKG | AS967 | None ms | Guangzhou: 59.43.188.122; Beijing: 59.43.19.98, 59.43.246.226 | [查看](https://globalping.io?measurement=2alfJgwo8pSicW45F00020wFk) |
-| `38.207.177.204` | 443 | HK/HK | AS0 | 1314 ms | Nanjing: 59.43.130.122, 59.43.139.117, 59.43.248.246; Nanjing: 59.43.123.89, 59.43.188.122 | [查看](https://globalping.io?measurement=2Nu40TJGXzkCPLi8000020w5c) |
+| `38.207.177.204` | 443 | HK/HK | AS0 | 1215 ms | Nanjing: 59.43.130.122, 59.43.139.117, 59.43.248.246; Nanjing: 59.43.123.89, 59.43.188.122 | [查看](https://globalping.io?measurement=2Nu40TJGXzkCPLi8000020w5c) |
 | `193.134.209.3` | 443 | HK/HKG | AS139659 | None ms | Nanjing: 59.43.123.89, 59.43.188.122; Guangzhou: 59.43.248.246, 59.43.250.54 | [查看](https://globalping.io?measurement=2pLTY2dstuLP9IYfO00020wFv) |
 | `103.137.22.116` | 443 | TW/TPE | AS131151 | None ms | Nanjing: 59.43.139.129, 59.43.16.182, 59.43.248.202, 59.43.250.114; Beijing: 59.43.132.10, 59.43.246.210, 59.43.38.106; Guangzhou: 59.43.16.166, 59.43.187.178 | [查看](https://globalping.io?measurement=2jGHyQxakstlZEFos000211yf) |
 | `103.137.22.71` | 443 | TW/TPE | AS134823 | None ms | Guangzhou: 59.43.187.182; Beijing: 59.43.181.222, 59.43.19.94, 59.43.246.210 | [查看](https://globalping.io?measurement=2zpHuG7uF1LDQMs6Z00020wGD) |
@@ -150,15 +150,15 @@
 | `43.160.240.180` | 443 | SG/SIN | AS132203 | None ms | Nanjing: 59.43.130.126, 59.43.139.117 | [查看](https://globalping.io?measurement=2IABIyi079OhY0s0E00020wEt) |
 | `43.163.83.37` | 443 | SG/SIN | AS132203 | None ms | Guangzhou: 59.43.181.94; Nanjing: 59.43.139.113; Guangzhou: 59.43.22.41 | [查看](https://globalping.io?measurement=2uZGcSB1fRKIolzVu00020wGf) |
 | `43.156.159.240` | 443 | SG/SIN | AS132203 | 1573 ms | Beijing: 59.43.137.222 | [查看](https://globalping.io?measurement=28gLy2PiTE4MsQazU00020wFc) |
-| `45.194.18.109` | 443 | SG/SG | AS0 | 1552 ms | Nanjing: 59.43.139.129, 59.43.16.182 | [查看](https://globalping.io?measurement=2quu38VadGanRObfq00020wF6) |
+| `45.194.18.109` | 443 | SG/SG | AS0 | 4786 ms | Nanjing: 59.43.139.129, 59.43.16.182 | [查看](https://globalping.io?measurement=2quu38VadGanRObfq00020wF6) |
 | `45.93.29.97` | 443 | KR/ICN | AS138195 | None ms | Guangzhou: 59.43.141.146; Guangzhou: 59.43.22.6, 59.43.46.77 | [查看](https://globalping.io?measurement=2XkfruRBJksnOT1fp00020wGf) |
-| `43.156.2.91` | 443 | SG/SG | AS0 | 2067 ms | Nanjing: 59.43.250.110, 59.43.42.33 | [查看](https://globalping.io?measurement=29cC9rmNlkB0N6g6H00020wFv) |
+| `43.156.2.91` | 443 | SG/SG | AS0 | 1557 ms | Nanjing: 59.43.250.110, 59.43.42.33 | [查看](https://globalping.io?measurement=29cC9rmNlkB0N6g6H00020wFv) |
 | `45.93.28.161` | 443 | KR/ICN | AS138195 | None ms | Guangzhou: 59.43.144.209 | [查看](https://globalping.io?measurement=2SGf3WjxnplBH7KBs00020wGC) |
 | `45.93.30.57` | 443 | KR/ICN | AS138195 | None ms | Nanjing: 59.43.132.153, 59.43.39.186 | [查看](https://globalping.io?measurement=2owrKCNmxxSacyfGz00020wHG) |
 | `185.194.54.137` | 443 | SG/SIN | AS8888 | None ms | Nanjing: 59.43.130.150, 59.43.139.117 | [查看](https://globalping.io?measurement=2GbDuXhnrPm8mo4u100020wGN) |
 | `43.133.34.193` | 443 | SG/SIN | AS132203 | 2366 ms | Guangzhou: 59.43.250.170; Nanjing: 59.43.139.113, 59.43.22.41 | [查看](https://globalping.io?measurement=20fKVLQQVpo4Bt9Cz00020wGf) |
 | `43.134.62.218` | 443 | SG/SIN | AS132203 | None ms | Guangzhou: 59.43.250.54; Nanjing: 59.43.139.113, 59.43.250.170 | [查看](https://globalping.io?measurement=27GTcva5MLW0BhBPg00020wGJ) |
-| `43.156.142.191` | 443 | SG/SG | AS0 | 2065 ms | Nanjing: 59.43.139.113 | [查看](https://globalping.io?measurement=20h2UogvgwUaboyCo00020wEO) |
+| `43.156.142.191` | 443 | SG/SG | AS0 | 1455 ms | Nanjing: 59.43.139.113 | [查看](https://globalping.io?measurement=20h2UogvgwUaboyCo00020wEO) |
 | `43.160.197.205` | 443 | SG/SIN | AS132203 | None ms | Nanjing: 59.43.139.109 | [查看](https://globalping.io?measurement=2KT94gubBZQWEKhyF00020wEo) |
 | `43.160.241.174` | 443 | SG/SG | AS0 | None ms | Nanjing: 59.43.130.150, 59.43.42.33; Guangzhou: 59.43.22.33 | [查看](https://globalping.io?measurement=23n0p5NLRjdWw9H1p00020wGe) |
 | `43.160.253.225` | 443 | SG/SIN | AS132203 | None ms | Nanjing: 59.43.139.117 | [查看](https://globalping.io?measurement=2d5yRvREhWyGxkFzQ00020wEM) |
@@ -230,22 +230,28 @@
 | `64.90.28.28` | 443 | HK/HKG | AS61112 | 1414 ms | Guangzhou: 59.43.187.182; Nanjing: 59.43.139.129, 59.43.183.106 | [查看](https://globalping.io?measurement=2lAE0HrZAmtwuZZNy00020wF6) |
 | `64.90.7.42` | 443 | HK/HKG | AS979 | 1190 ms | Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2OBtop16g4Ek0Eszf00020wFc) |
 | `87.83.108.38` | 443 | HK/HKG | AS49304 | None ms | Guangzhou: 59.43.184.122; Beijing: 59.43.182.42, 59.43.188.234, 59.43.19.94, 59.43.249.181 | [查看](https://globalping.io?measurement=2JAX90QqeGnC2USLe00020wHi) |
-| `149.104.27.213` | 443 | HK/HK | AS0 | 1507 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.139.117, 59.43.248.250; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2HZwK5TjBwHywpeXK00021EwE) |
-| `149.104.29.237` | 443 | HK/HK | AS0 | 1359 ms | Guangzhou: 59.43.248.250, 59.43.250.54; Nanjing: 59.43.139.113, 59.43.16.166, 59.43.248.250; Beijing: 59.43.19.98, 59.43.246.226; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=2yAVKVI6gphZfX0P400021EwE) |
-| `175.29.23.179` | 443 | HK/HK | AS0 | 1555 ms | Guangzhou: 59.43.22.41, 59.43.248.202; Nanjing: 59.43.130.106, 59.43.139.109, 59.43.187.182; Beijing: 59.43.182.110, 59.43.19.98, 59.43.246.210; Guangzhou: 59.43.130.114, 59.43.248.202 | [查看](https://globalping.io?measurement=2w2mZERdSOnU5u4BX00021EwE) |
-| `38.207.177.113` | 443 | HK/HK | AS0 | 1450 ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.117, 59.43.248.246, 59.43.250.50; Beijing: 59.43.132.30, 59.43.246.226, 59.43.38.122; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=25EWf4go48I2gqClo00021EuV) |
-| `38.207.179.77` | 443 | HK/HK | AS0 | 1358 ms | Guangzhou: 59.43.188.122, 59.43.22.33; Nanjing: 59.43.123.89, 59.43.130.118, 59.43.183.110; Beijing: 59.43.182.210, 59.43.19.98, 59.43.248.2; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=2imQYin4KpHCOcEoW00021EuW) |
-| `43.175.131.30` | 443 | HK/HK | AS0 | 1543 ms | Guangzhou: 59.43.130.110, 59.43.181.94; Nanjing: 59.43.138.54, 59.43.46.101 | [查看](https://globalping.io?measurement=2GjqHPXFfvxIfP2wW00021EuV) |
-| `45.136.14.153` | 443 | HK/HK | AS0 | 2651 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.130.162, 59.43.139.109, 59.43.183.110; Beijing: 59.43.182.110, 59.43.19.98, 59.43.246.226; Guangzhou: 59.43.22.41, 59.43.248.250 | [查看](https://globalping.io?measurement=2iqMWA3gvb50xf7Uv00021EuV) |
+| `149.104.27.213` | 443 | HK/HK | AS0 | 1713 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.139.117, 59.43.248.250; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2HZwK5TjBwHywpeXK00021EwE) |
+| `149.104.29.237` | 443 | HK/HK | AS0 | 1478 ms | Guangzhou: 59.43.248.250, 59.43.250.54; Nanjing: 59.43.139.113, 59.43.16.166, 59.43.248.250; Beijing: 59.43.19.98, 59.43.246.226; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=2yAVKVI6gphZfX0P400021EwE) |
+| `175.29.23.179` | 443 | HK/HK | AS0 | 2286 ms | Guangzhou: 59.43.22.41, 59.43.248.202; Nanjing: 59.43.130.106, 59.43.139.109, 59.43.187.182; Beijing: 59.43.182.110, 59.43.19.98, 59.43.246.210; Guangzhou: 59.43.130.114, 59.43.248.202 | [查看](https://globalping.io?measurement=2w2mZERdSOnU5u4BX00021EwE) |
+| `38.207.177.113` | 443 | HK/HK | AS0 | 1094 ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.117, 59.43.248.246, 59.43.250.50; Beijing: 59.43.132.30, 59.43.246.226, 59.43.38.122; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=25EWf4go48I2gqClo00021EuV) |
+| `38.207.179.77` | 443 | HK/HK | AS0 | 1891 ms | Guangzhou: 59.43.188.122, 59.43.22.33; Nanjing: 59.43.123.89, 59.43.130.118, 59.43.183.110; Beijing: 59.43.182.210, 59.43.19.98, 59.43.248.2; Guangzhou: 59.43.188.122 | [查看](https://globalping.io?measurement=2imQYin4KpHCOcEoW00021EuW) |
+| `43.175.131.30` | 443 | HK/HK | AS0 | 1128 ms | Guangzhou: 59.43.130.110, 59.43.181.94; Nanjing: 59.43.138.54, 59.43.46.101 | [查看](https://globalping.io?measurement=2GjqHPXFfvxIfP2wW00021EuV) |
+| `45.136.14.153` | 443 | HK/HK | AS0 | 1077 ms | Guangzhou: 59.43.188.122; Nanjing: 59.43.130.162, 59.43.139.109, 59.43.183.110; Beijing: 59.43.182.110, 59.43.19.98, 59.43.246.226; Guangzhou: 59.43.22.41, 59.43.248.250 | [查看](https://globalping.io?measurement=2iqMWA3gvb50xf7Uv00021EuV) |
 | `45.152.64.16` | 443 | HK/HK | AS0 | 2856 ms | Guangzhou: 59.43.248.246; Nanjing: 59.43.139.117, 59.43.16.182, 59.43.248.250, 59.43.250.50; Beijing: 59.43.132.10, 59.43.246.226, 59.43.38.106; Guangzhou: 59.43.188.122, 59.43.22.33 | [查看](https://globalping.io?measurement=2cm6EZoVg0WakxodX00021EuV) |
-| `45.152.67.18` | 443 | HK/HK | AS0 | 1377 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.117, 59.43.183.110; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2NvA6bTZsvOXhXMwr00021EwE) |
-| `68.64.178.52` | 443 | HK/HK | AS0 | 1448 ms | Guangzhou: 59.43.130.114, 59.43.183.110; Nanjing: 59.43.123.89, 59.43.16.166, 59.43.181.94, 59.43.188.122; Beijing: 59.43.132.34, 59.43.246.226, 59.43.249.49; Guangzhou: 59.43.16.166, 59.43.180.242, 59.43.248.250 | [查看](https://globalping.io?measurement=2Nc8HwneF6z2zZpSM00021EuV) |
-| `124.156.208.160` | 443 | JP/JP | AS0 | 1519 ms | Guangzhou: 59.43.130.214, 59.43.141.146, 59.43.186.226; Nanjing: 59.43.139.133, 59.43.39.118; Guangzhou: 59.43.141.146 | [查看](https://globalping.io?measurement=25Ny5u5fIuUWY4TVn00021EwE) |
+| `45.152.67.18` | 443 | HK/HK | AS0 | 1711 ms | Guangzhou: 59.43.183.110; Nanjing: 59.43.139.117, 59.43.183.110; Guangzhou: 59.43.248.250 | [查看](https://globalping.io?measurement=2NvA6bTZsvOXhXMwr00021EwE) |
+| `68.64.178.52` | 443 | HK/HK | AS0 | 1243 ms | Guangzhou: 59.43.130.114, 59.43.183.110; Nanjing: 59.43.123.89, 59.43.16.166, 59.43.181.94, 59.43.188.122; Beijing: 59.43.132.34, 59.43.246.226, 59.43.249.49; Guangzhou: 59.43.16.166, 59.43.180.242, 59.43.248.250 | [查看](https://globalping.io?measurement=2Nc8HwneF6z2zZpSM00021EuV) |
+| `124.156.208.160` | 443 | JP/JP | AS0 | 944 ms | Guangzhou: 59.43.130.214, 59.43.141.146, 59.43.186.226; Nanjing: 59.43.139.133, 59.43.39.118; Guangzhou: 59.43.141.146 | [查看](https://globalping.io?measurement=25Ny5u5fIuUWY4TVn00021EwE) |
 | `177.3.89.196` | 443 | JP/JP | AS0 | 1275 ms | Guangzhou: 59.43.187.178; Nanjing: 59.43.183.106, 59.43.42.33; Beijing: 59.43.181.222, 59.43.19.94, 59.43.246.210; Guangzhou: 59.43.187.182 | [查看](https://globalping.io?measurement=2xS3cK5nuHtwQRnYF00021EwE) |
 | `43.130.241.204` | 443 | JP/JP | AS0 | None ms | Guangzhou: 59.43.144.209; Nanjing: 59.43.139.133; Beijing: 59.43.46.86; Guangzhou: 59.43.138.70, 59.43.144.209 | [查看](https://globalping.io?measurement=24PvPKAf26uEjdKRk00021EuV) |
-| `43.165.191.60` | 443 | JP/JP | AS0 | 1385 ms | Guangzhou: 59.43.130.214, 59.43.46.77; Nanjing: 59.43.132.153, 59.43.39.194; Beijing: 59.43.159.98; Guangzhou: 59.43.141.146, 59.43.247.186 | [查看](https://globalping.io?measurement=24DMrfBuwQ1Rk6J9100021EuV) |
-| `64.83.39.176` | 443 | JP/JP | AS0 | 1236 ms | Guangzhou: 59.43.130.202, 59.43.137.226, 59.43.183.2, 59.43.38.178; Nanjing: 59.43.139.137, 59.43.246.26; Beijing: 59.43.159.98, 59.43.183.2, 59.43.39.190; Guangzhou: 59.43.137.226, 59.43.246.26, 59.43.39.190 | [查看](https://globalping.io?measurement=257bnyTkU3eJZUEXV00021EuV) |
-| `43.172.182.147` | 443 | SG/SG | AS0 | 2147 ms | Guangzhou: 59.43.130.126, 59.43.250.54; Nanjing: 59.43.130.158, 59.43.139.113; Beijing: 59.43.137.222, 59.43.16.166, 59.43.250.170; Guangzhou: 59.43.22.41 | [查看](https://globalping.io?measurement=22r9MMEUzjXBqkD0T00021EuV) |
-| `207.56.137.174` | 443 | TW/TW | AS0 | 1465 ms | Nanjing: 59.43.159.98; Guangzhou: 59.43.22.33 | [查看](https://globalping.io?measurement=2IAgiAZTBbu8GOtkp00021EwE) |
-| `154.12.54.201` | 443 | US/US | AS0 | 1917 ms | Guangzhou: 59.43.181.14, 59.43.182.73; Nanjing: 59.43.132.153, 59.43.138.66, 59.43.184.158; Beijing: 59.43.138.66, 59.43.182.90; Guangzhou: 59.43.182.73 | [查看](https://globalping.io?measurement=2dLHIiJIt0lIHuCJI00021EuW) |
-| `179.255.152.1` | 443 | US/US | AS0 | 1580 ms | Guangzhou: 59.43.184.118; Nanjing: 59.43.139.137, 59.43.189.38; Beijing: 59.43.181.146, 59.43.39.162, 59.43.46.86; Guangzhou: 59.43.184.118 | [查看](https://globalping.io?measurement=2KhEvEKpGUVedc2IN00021EwE) |
+| `43.165.191.60` | 443 | JP/JP | AS0 | 1009 ms | Guangzhou: 59.43.130.214, 59.43.46.77; Nanjing: 59.43.132.153, 59.43.39.194; Beijing: 59.43.159.98; Guangzhou: 59.43.141.146, 59.43.247.186 | [查看](https://globalping.io?measurement=24DMrfBuwQ1Rk6J9100021EuV) |
+| `45.94.40.102` | 443 | JP/JP | AS0 | 1348 ms | Guangzhou: 59.43.141.146; Nanjing: 59.43.22.18, 59.43.39.210; Beijing: 59.43.46.82; Guangzhou: 59.43.138.66, 59.43.144.209, 59.43.181.50 | [查看](https://globalping.io?measurement=28dLgLG2JimBtSXOu00021Eyg) |
+| `64.83.39.176` | 443 | JP/JP | AS0 | 1220 ms | Guangzhou: 59.43.130.202, 59.43.137.226, 59.43.183.2, 59.43.38.178; Nanjing: 59.43.139.137, 59.43.246.26; Beijing: 59.43.159.98, 59.43.183.2, 59.43.39.190; Guangzhou: 59.43.137.226, 59.43.246.26, 59.43.39.190 | [查看](https://globalping.io?measurement=257bnyTkU3eJZUEXV00021EuV) |
+| `43.160.203.174` | 443 | SG/SG | AS0 | 1363 ms | Guangzhou: 59.43.130.126; Nanjing: 59.43.139.129, 59.43.250.110; Beijing: 59.43.130.102, 59.43.142.234; Xi'an: 59.43.93.109 | [查看](https://globalping.io?measurement=2rBBYAMfP8KJeahBp00021Eyg) |
+| `43.172.182.147` | 443 | SG/SG | AS0 | 1543 ms | Guangzhou: 59.43.130.126, 59.43.250.54; Nanjing: 59.43.130.158, 59.43.139.113; Beijing: 59.43.137.222, 59.43.16.166, 59.43.250.170; Guangzhou: 59.43.22.41 | [查看](https://globalping.io?measurement=22r9MMEUzjXBqkD0T00021EuV) |
+| `207.56.137.174` | 443 | TW/TW | AS0 | 1111 ms | Nanjing: 59.43.159.98; Guangzhou: 59.43.22.33 | [查看](https://globalping.io?measurement=2IAgiAZTBbu8GOtkp00021EwE) |
+| `154.12.52.242` | 443 | US/US | AS0 | 1413 ms | Guangzhou: 59.43.16.182, 59.43.189.42; Nanjing: 59.43.182.82, 59.43.39.190; Guangzhou: 59.43.130.154, 59.43.182.73 | [查看](https://globalping.io?measurement=2XB1k4RhizSFm21X100021Eyg) |
+| `154.12.54.201` | 443 | US/US | AS0 | 2175 ms | Guangzhou: 59.43.181.14, 59.43.182.73; Nanjing: 59.43.132.153, 59.43.138.66, 59.43.184.158; Beijing: 59.43.138.66, 59.43.182.90; Guangzhou: 59.43.182.73 | [查看](https://globalping.io?measurement=2dLHIiJIt0lIHuCJI00021EuW) |
+| `179.253.246.55` | 443 | US/US | AS0 | 1450 ms | Guangzhou: 59.43.246.234; Nanjing: 59.43.138.54, 59.43.184.154, 59.43.186.226, 59.43.46.101; Beijing: 59.43.138.54, 59.43.182.90, 59.43.46.82; Nanjing: 59.43.184.158, 59.43.46.97 | [查看](https://globalping.io?measurement=2bP4nLJStfNEYaOv300021Eyh) |
+| `179.255.152.1` | 443 | US/US | AS0 | 2217 ms | Guangzhou: 59.43.184.118; Nanjing: 59.43.139.137, 59.43.189.38; Beijing: 59.43.181.146, 59.43.39.162, 59.43.46.86; Guangzhou: 59.43.184.118 | [查看](https://globalping.io?measurement=2KhEvEKpGUVedc2IN00021EwE) |
+| `208.68.180.147` | 443 | US/US | AS0 | 1314 ms | Guangzhou: 59.43.189.42, 59.43.250.170; Nanjing: 59.43.139.137, 59.43.184.158, 59.43.39.118; Beijing: 59.43.182.90, 59.43.22.6, 59.43.46.82; Nanjing: 59.43.184.154, 59.43.22.18 | [查看](https://globalping.io?measurement=2YAb1AqLUfvNhfDGs00021Eyg) |
+| `154.81.37.31` | 443 | US/US | AS0 | 1370 ms | Guangzhou: 59.43.16.166, 59.43.184.118; Nanjing: 59.43.189.38; Beijing: 59.43.189.34, 59.43.46.82 | [查看](https://globalping.io?measurement=2ueMN4lFyIi5JqqrR00021Eyg) |
